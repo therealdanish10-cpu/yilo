@@ -56,12 +56,16 @@
     /* ====== NAVBAR ====== */
     #navbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      padding: 1.4rem 2.5rem;
+      padding: 1.1rem 2.5rem;
       display: flex; align-items: center; justify-content: space-between;
       background: transparent;
-      transition: background .5s ease, padding .4s ease;
+      transition: background .4s ease, box-shadow .4s ease;
     }
-    #navbar.scrolled { background: var(--plum); padding: .9rem 2.5rem; }
+    #navbar.scrolled {
+      background: var(--plum);
+      padding: 1.1rem 2.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
     .nav-logo {
       display: flex;
       align-items: center;
@@ -1204,7 +1208,7 @@
   <!-- NAVBAR -->
   <header id="navbar" role="banner">
     <a href="index.html" class="nav-logo" aria-label="Yilo by Achieng Home">
-      <img id="navLogo" src="images/logos/logo3.svg" alt="Yilo by Achieng Logo" loading="eager" style="height: 70px; width: auto; object-fit: contain;" />
+      <img id="navLogo" src="images/logos/logo1.svg" alt="Yilo by Achieng Logo" loading="eager" style="height: 70px; width: auto; object-fit: contain;" />
     </a>
     <nav class="nav-links" aria-label="Primary">
       <a href="#hero">Home</a>
@@ -1783,19 +1787,9 @@
   <script>
     /* ---- Navbar scroll ---- */
     const navbar = document.getElementById('navbar');
-    const navLogo = document.getElementById('navLogo');
     function updateNavbarScroll() {
       const isScrolled = window.scrollY > 60;
       if (navbar) navbar.classList.toggle('scrolled', isScrolled);
-      if (navLogo) {
-        if (isScrolled) {
-          if (!navLogo.src.endsWith('logo1.svg')) navLogo.src = 'images/logos/logo1.svg';
-          navLogo.style.filter = 'none';
-        } else {
-          if (!navLogo.src.endsWith('logo3.svg')) navLogo.src = 'images/logos/logo3.svg';
-          navLogo.style.filter = 'none';
-        }
-      }
     }
     window.addEventListener('scroll', updateNavbarScroll, { passive: true });
     updateNavbarScroll();
