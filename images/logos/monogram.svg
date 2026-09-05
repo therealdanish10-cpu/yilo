@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <!-- Circular Badge -->
+  <!-- Outer Gold Ring -->
+  <circle cx="250" cy="250" r="236" fill="none" stroke="#C9A24B" stroke-width="3.5" />
+  <!-- Inner Deep Plum Disc -->
+  <circle cx="250" cy="250" r="230" fill="#3B0F2F" />
+  <!-- Crown Ornament -->
+  <g transform="translate(250, 132) scale(0.72)">
+    <!-- Central Lanceolate Leaf -->
+    <path d="M 0 0 C -7 -18, -7 -45, 0 -66 C 7 -45, 7 -18, 0 0 Z" fill="#C9A24B" />
+    <!-- Apex Dot -->
+    <circle cx="0" cy="-73" r="2.2" fill="#C9A24B" />
+    <!-- Flanking Leaves -->
+    <path d="M -2.5 -2 C -11 -16, -19 -32, -22 -44 C -18 -41, -11 -25, -1.5 -4 Z" fill="#C9A24B" />
+    <path d="M 2.5 -2 C 11 -16, 19 -32, 22 -44 C 18 -41, 11 -25, 1.5 -4 Z" fill="#C9A24B" />
+    <!-- Radiating Dots (Left) -->
+    <circle cx="-21" cy="-28" r="2.2" fill="#C9A24B" />
+    <circle cx="-32" cy="-40" r="1.8" fill="#C9A24B" />
+    <circle cx="-42" cy="-51" r="1.3" fill="#C9A24B" />
+    <!-- Radiating Dots (Right) -->
+    <circle cx="21" cy="-28" r="2.2" fill="#C9A24B" />
+    <circle cx="32" cy="-40" r="1.8" fill="#C9A24B" />
+    <circle cx="42" cy="-51" r="1.3" fill="#C9A24B" />
+    <!-- Outward Scrolling Flourishes -->
+    <path d="M -3 0 C -12 -10, -28 -22, -45 -14 C -57 -7, -59 10, -48 13 C -39 16, -35 6, -42 2 C -47 -1, -51 4, -49 8" fill="none" stroke="#C9A24B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 3 0 C 12 -10, 28 -22, 45 -14 C 57 -7, 59 10, 48 13 C 39 16, 35 6, 42 2 C 47 -1, 51 4, 49 8" fill="none" stroke="#C9A24B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+  <!-- Interlocking YA Monogram -->
+  <g transform="translate(250, 290) scale(0.98) translate(-280, -180)">
+
+    <!-- Letter A -->
+    <!-- Left swash leg of A -->
+    <path d="M 353 82 
+             C 328 145, 286 230, 268 268
+             C 250 302, 222 320, 185 314
+             C 152 305, 146 265, 168 238
+             C 176 226, 188 228, 186 236
+             C 184 242, 175 244, 171 242
+             C 162 236, 160 266, 178 288
+             C 198 308, 228 300, 252 270
+             C 275 235, 318 145, 346 82 Z" fill="#C9A24B" />
+    <!-- Right thick leg of A -->
+    <path d="M 344 82 
+             C 350 82, 354 82, 358 82
+             L 448 305 
+             L 458 305 
+             L 458 311 
+             L 414 311 
+             L 414 305 
+             L 426 305 
+             L 353 110 
+             Z" fill="#C9A24B" />
+    <!-- Apex cap of A -->
+    <path d="M 340 83 C 346 78, 352 76, 358 76 C 360 78, 360 81, 358 83 Z" fill="#C9A24B" />
+
+    <!-- Letter Y -->
+    <!-- Top left serif with bracket -->
+    <path d="M 160 44 L 214 44 C 205 45, 202 48, 202 54 L 182 54 C 182 48, 175 45, 160 44 Z" fill="#C9A24B" />
+    <!-- Left thick arm flowing seamlessly into crossbar swoosh -->
+    <path d="M 183 54 
+             L 202 54 
+             C 236 135, 256 185, 276 215 
+             C 298 248, 342 268, 412 254
+             C 422 252, 426 257, 418 261
+             C 362 280, 304 270, 272 234
+             C 264 218, 250 170, 183 54 Z" fill="#C9A24B" />
+    <!-- Top right serif -->
+    <path d="M 352 44 L 382 44 C 375 45, 372 48, 372 52 L 368 52 C 368 48, 365 45, 352 44 Z" fill="#C9A24B" />
+    <!-- Right thin arm of Y -->
+    <path d="M 370 52 L 373 52 L 280 210 L 277 210 Z" fill="#C9A24B" />
+    <!-- Vertical stem of Y -->
+    <path d="M 265 205 L 280 205 L 280 305 C 280 308, 287 310, 293 311 L 251 311 C 257 310, 265 308, 265 305 Z" fill="#C9A24B" />
+  </g>
+</svg>
