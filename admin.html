@@ -726,6 +726,65 @@
       color: var(--gold);
       word-break: break-all;
     }
+    .file-previews-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .admin-preview-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1.5px solid var(--gold);
+      background: var(--plum);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      animation: thumbPopIn 0.3s ease;
+      position: relative;
+    }
+    @keyframes thumbPopIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .admin-preview-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .upload-progress-msg {
+      margin: 12px 0 6px;
+      font-size: 0.9rem;
+      color: var(--gold);
+      font-weight: 600;
+      text-align: center;
+      display: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .admin-review-photos-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .admin-review-photo-item {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--gold);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .admin-review-photo-item:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(201, 162, 75, 0.45);
+    }
+    .admin-review-photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     /* Buttons */
     .btn-admin-submit {
@@ -1016,12 +1075,13 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label">Client Photo (Optional)</label>
+                <label class="form-label">Client Photos (Optional)</label>
                 <div class="file-box">
-                  <input type="file" id="addRevPhoto" accept="image/*" />
-                  <span style="font-size:0.85rem;color:var(--plum);font-weight:500;">Click to upload reviewer photo</span>
+                  <input type="file" id="addRevPhoto" accept="image/*" multiple />
+                  <span style="font-size:0.85rem;color:var(--plum);font-weight:500;">Click or drag reviewer photos here (multiple allowed)</span>
                   <div class="file-preview-name" id="addRevPhotoName"></div>
                 </div>
+                <div class="file-previews-container" id="addRevPhotoPreviews"></div>
               </div>
 
               <button type="submit" class="btn-admin-submit" id="submitAddReviewBtn">Add Approved Review</button>
@@ -1035,12 +1095,13 @@
             <form id="addPhotoForm" novalidate>
               
               <div class="form-group">
-                <label class="form-label">Select Image *</label>
+                <label class="form-label">Select Images *</label>
                 <div class="file-box">
-                  <input type="file" id="addPhotoFile" accept="image/*" required />
-                  <span style="font-size:0.85rem;color:var(--plum);font-weight:500;">Click or drag an image here</span>
+                  <input type="file" id="addPhotoFile" accept="image/*" multiple required />
+                  <span style="font-size:0.85rem;color:var(--plum);font-weight:500;">Click or drag images here (multiple allowed)</span>
                   <div class="file-preview-name" id="addPhotoFileName"></div>
                 </div>
+                <div class="file-previews-container" id="addPhotoPreviews"></div>
               </div>
 
               <div class="form-group">
@@ -1053,7 +1114,8 @@
                 <input type="text" id="addPhotoCaption" class="form-input" placeholder="e.g. Whispers of Romance under the stars" />
               </div>
 
-              <button type="submit" class="btn-admin-submit" id="submitAddPhotoBtn">Upload Photo</button>
+              <div class="upload-progress-msg" id="addPhotoProgress"></div>
+              <button type="submit" class="btn-admin-submit" id="submitAddPhotoBtn">Upload Photos</button>
             </form>
           </div>
         </section>
@@ -1402,6 +1464,39 @@
       document.getElementById('subTabApprovedBadge').textContent = aCount;
     }
 
+    function parsePhotoUrls(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw.filter(Boolean);
+      if (typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if (trimmed.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) return parsed.filter(Boolean);
+          } catch (_) {}
+        }
+        return [trimmed];
+      }
+      return [];
+    }
+
+    function renderReviewPhotosMarkup(raw, reviewerName) {
+      const photos = parsePhotoUrls(raw);
+      if (photos.length === 0) return '';
+      if (photos.length === 1) {
+        return `<img src="${photos[0]}" alt="${escapeHtml(reviewerName)}" class="review-thumb" onclick="window.open('${photos[0]}','_blank')" title="Click to view photo" />`;
+      }
+      return `
+        <div class="admin-review-photos-row">
+          ${photos.map((url, idx) => `
+            <div class="admin-review-photo-item" onclick="window.open('${url}','_blank')" title="Photo ${idx + 1} - click to view">
+              <img src="${url}" alt="${escapeHtml(reviewerName)}" />
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
     function renderPendingReviews() {
       const container = document.getElementById('pendingReviewsList');
       container.innerHTML = '';
@@ -1423,9 +1518,7 @@
         const starsStr = '★'.repeat(rev.rating || 5) + '☆'.repeat(5 - (rev.rating || 5));
         const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
 
-        const photoHtml = rev.photo_url
-          ? `<img src="${rev.photo_url}" alt="${rev.name}" class="review-thumb" onclick="window.open('${rev.photo_url}','_blank')" title="Click to view full photo" />`
-          : '';
+        const photoHtml = renderReviewPhotosMarkup(rev.photo_url, rev.name);
 
         card.innerHTML = `
           <div class="review-top-row">
@@ -1472,9 +1565,7 @@
         const starsStr = '★'.repeat(rev.rating || 5) + '☆'.repeat(5 - (rev.rating || 5));
         const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
 
-        const photoHtml = rev.photo_url
-          ? `<img src="${rev.photo_url}" alt="${rev.name}" class="review-thumb" onclick="window.open('${rev.photo_url}','_blank')" />`
-          : '';
+        const photoHtml = renderReviewPhotosMarkup(rev.photo_url, rev.name);
 
         card.innerHTML = `
           <div class="review-top-row">
@@ -1682,9 +1773,24 @@
 
     const addRevPhoto = document.getElementById('addRevPhoto');
     const addRevPhotoName = document.getElementById('addRevPhotoName');
+    const addRevPhotoPreviews = document.getElementById('addRevPhotoPreviews');
+
     addRevPhoto.addEventListener('change', () => {
-      if (addRevPhoto.files && addRevPhoto.files[0]) {
-        addRevPhotoName.textContent = `Selected: ${addRevPhoto.files[0].name}`;
+      addRevPhotoPreviews.innerHTML = '';
+      if (addRevPhoto.files && addRevPhoto.files.length > 0) {
+        const count = addRevPhoto.files.length;
+        addRevPhotoName.textContent = `${count} image${count > 1 ? 's' : ''} selected`;
+
+        Array.from(addRevPhoto.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'admin-preview-thumb';
+            thumb.innerHTML = `<img src="${e.target.result}" alt="${file.name}" title="${file.name}" />`;
+            addRevPhotoPreviews.appendChild(thumb);
+          };
+          reader.readAsDataURL(file);
+        });
       } else {
         addRevPhotoName.textContent = '';
       }
@@ -1706,10 +1812,17 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
 
-      let photo_url = null;
-      if (addRevPhoto.files && addRevPhoto.files[0]) {
-        photo_url = await uploadFileToStorage(addRevPhoto.files[0], 'review-photos');
+      let photoUrls = [];
+      if (addRevPhoto.files && addRevPhoto.files.length > 0) {
+        const files = Array.from(addRevPhoto.files);
+        for (let i = 0; i < files.length; i++) {
+          submitBtn.textContent = `Uploading photo ${i + 1} of ${files.length}...`;
+          const url = await uploadFileToStorage(files[i], 'review-photos');
+          photoUrls.push(url);
+        }
       }
+
+      const photo_url = photoUrls.length > 0 ? JSON.stringify(photoUrls) : null;
 
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
@@ -1733,6 +1846,7 @@
           showToast('Review added and approved!');
           document.getElementById('addReviewForm').reset();
           addRevPhotoName.textContent = '';
+          addRevPhotoPreviews.innerHTML = '';
           // Switch to approved reviews tab
           document.querySelector('button[data-tab="tabReviews"]').click();
           subTabApproved.click();
@@ -1747,12 +1861,28 @@
       }
     });
 
-    /* ---- TAB 4: ADD PHOTO FORM ---- */
+    /* ---- TAB 4: ADD PHOTO FORM (Bulk Upload) ---- */
     const addPhotoFile = document.getElementById('addPhotoFile');
     const addPhotoFileName = document.getElementById('addPhotoFileName');
+    const addPhotoPreviews = document.getElementById('addPhotoPreviews');
+    const addPhotoProgress = document.getElementById('addPhotoProgress');
+
     addPhotoFile.addEventListener('change', () => {
-      if (addPhotoFile.files && addPhotoFile.files[0]) {
-        addPhotoFileName.textContent = `Selected: ${addPhotoFile.files[0].name}`;
+      addPhotoPreviews.innerHTML = '';
+      if (addPhotoFile.files && addPhotoFile.files.length > 0) {
+        const count = addPhotoFile.files.length;
+        addPhotoFileName.textContent = `${count} image${count > 1 ? 's' : ''} selected`;
+
+        Array.from(addPhotoFile.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'admin-preview-thumb';
+            thumb.innerHTML = `<img src="${e.target.result}" alt="${file.name}" title="${file.name}" />`;
+            addPhotoPreviews.appendChild(thumb);
+          };
+          reader.readAsDataURL(file);
+        });
       } else {
         addPhotoFileName.textContent = '';
       }
@@ -1764,8 +1894,8 @@
       const category = document.getElementById('addPhotoCategory').value.trim();
       const caption = document.getElementById('addPhotoCaption').value.trim();
 
-      if (!addPhotoFile.files || !addPhotoFile.files[0]) {
-        showToast('Please choose an image file to upload.', 'error');
+      if (!addPhotoFile.files || addPhotoFile.files.length === 0) {
+        showToast('Please choose at least one image file to upload.', 'error');
         return;
       }
       if (!category) {
@@ -1773,59 +1903,73 @@
         return;
       }
 
+      const files = Array.from(addPhotoFile.files);
+      const total = files.length;
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Uploading...';
+      addPhotoProgress.style.display = 'block';
+      addPhotoProgress.style.color = 'var(--gold)';
 
-      const file = addPhotoFile.files[0];
-      const imageUrl = await uploadFileToStorage(file, 'gallery-photos');
+      let localPhotos = JSON.parse(localStorage.getItem(LOCAL_GALLERY_KEY) || '[]');
 
-      // Create photo record
-      const newPhoto = {
-        id: 'gal_' + Date.now(),
-        image_url: imageUrl,
-        category: category,
-        caption: caption || 'Every event has a story',
-        created_at: new Date().toISOString()
-      };
+      for (let i = 0; i < total; i++) {
+        const file = files[i];
+        addPhotoProgress.textContent = `Uploading ${i + 1} of ${total} images...`;
+        submitBtn.textContent = `Uploading (${i + 1}/${total})...`;
 
-      // Try inserting into Supabase gallery table
-      try {
-        await fetch(`${SUPABASE_URL}/rest/v1/gallery`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            image_url: imageUrl,
-            category: category,
-            caption: caption || 'Every event has a story'
-          })
-        });
-      } catch (err) {
-        console.warn('Supabase gallery insert note:', err);
+        const imageUrl = await uploadFileToStorage(file, 'gallery-photos');
+
+        const newPhoto = {
+          id: 'gal_' + Date.now() + '_' + i,
+          image_url: imageUrl,
+          category: category,
+          caption: caption || 'Every event has a story',
+          created_at: new Date().toISOString()
+        };
+
+        // Insert individual record into Supabase gallery table
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/gallery`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              image_url: imageUrl,
+              category: category,
+              caption: caption || 'Every event has a story'
+            })
+          });
+        } catch (err) {
+          console.warn('Supabase gallery insert note:', err);
+        }
+
+        localPhotos.unshift(newPhoto);
       }
 
-      // Also persist locally for instantaneous admin & site view
-      let localPhotos = JSON.parse(localStorage.getItem(LOCAL_GALLERY_KEY) || '[]');
-      localPhotos.unshift(newPhoto);
       localStorage.setItem(LOCAL_GALLERY_KEY, JSON.stringify(localPhotos));
 
-      showToast('Photo added successfully!');
-      document.getElementById('addPhotoForm').reset();
-      addPhotoFileName.textContent = '';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Upload Photo';
+      const successMsg = `${total} photo${total > 1 ? 's' : ''} added successfully!`;
+      addPhotoProgress.textContent = successMsg;
+      showToast(successMsg);
 
-      // Switch to Gallery tab
-      document.querySelector('button[data-tab="tabGallery"]').click();
+      setTimeout(() => {
+        document.getElementById('addPhotoForm').reset();
+        addPhotoFileName.textContent = '';
+        addPhotoPreviews.innerHTML = '';
+        addPhotoProgress.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Upload Photos';
+
+        // Switch to Gallery tab
+        document.querySelector('button[data-tab="tabGallery"]').click();
+      }, 1200);
     });
 
     /* ---- Storage Upload Helper ---- */
     async function uploadFileToStorage(file, bucketName = 'gallery-photos') {
-      const cleanExt = file.name.split('.').pop().toLowerCase() || 'jpg';
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${cleanExt}`;
+      const filename = `${Date.now()}_${file.name}`;
 
       // Try creating bucket if it doesn't exist
       try {
@@ -1842,7 +1986,7 @@
 
       // Try uploading to bucket
       try {
-        const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${fileName}`, {
+        const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${encodeURIComponent(filename)}`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -1852,7 +1996,7 @@
           body: file
         });
         if (uploadRes.ok) {
-          return `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${fileName}`;
+          return `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${filename}`;
         }
       } catch (err) {
         console.warn(`Storage upload to ${bucketName} failed:`, err);

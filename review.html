@@ -312,6 +312,32 @@
       display: none;
       word-break: break-all;
     }
+    .preview-thumbnails-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    .preview-thumb-item {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1.5px solid var(--gold);
+      box-shadow: 0 4px 10px rgba(59, 15, 47, 0.12);
+      animation: thumbPopIn 0.3s ease;
+      background: var(--plum);
+    }
+    @keyframes thumbPopIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .preview-thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     /* Submit Button */
     .btn-submit-review {
@@ -725,16 +751,17 @@
 
         <!-- 5. Photo (Optional) -->
         <div class="form-group">
-          <label class="form-label">Add a photo (optional)</label>
+          <label class="form-label">Add photos (optional)</label>
           <div class="file-upload-box" id="fileUploadBox">
-            <input type="file" id="photoInput" accept="image/*" />
+            <input type="file" id="photoInput" accept="image/*" multiple />
             <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <div class="upload-text">Click or drag an image here to upload</div>
+            <div class="upload-text">Click or drag images here to upload (multiple allowed)</div>
             <div class="file-name-preview" id="fileNamePreview"></div>
           </div>
+          <div class="preview-thumbnails-grid" id="reviewPhotoPreviews"></div>
         </div>
 
         <!-- 6. Submit Button -->
@@ -931,11 +958,33 @@
     /* ---- Photo File Input Handling ---- */
     const photoInput = document.getElementById('photoInput');
     const fileNamePreview = document.getElementById('fileNamePreview');
+    const reviewPhotoPreviews = document.getElementById('reviewPhotoPreviews');
+
+    function readFileAsDataUrl(file) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
     photoInput.addEventListener('change', () => {
-      if (photoInput.files && photoInput.files[0]) {
-        const file = photoInput.files[0];
-        fileNamePreview.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      reviewPhotoPreviews.innerHTML = '';
+      if (photoInput.files && photoInput.files.length > 0) {
+        const count = photoInput.files.length;
+        fileNamePreview.textContent = `${count} image${count > 1 ? 's' : ''} selected`;
         fileNamePreview.style.display = 'block';
+
+        Array.from(photoInput.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'preview-thumb-item';
+            thumb.innerHTML = `<img src="${e.target.result}" alt="${file.name}" title="${file.name}" />`;
+            reviewPhotoPreviews.appendChild(thumb);
+          };
+          reader.readAsDataURL(file);
+        });
       } else {
         fileNamePreview.textContent = '';
         fileNamePreview.style.display = 'none';
@@ -997,15 +1046,11 @@
       submitBtn.innerHTML = `<span>Submitting...</span>`;
 
       try {
-        let photo_url = null;
+        let photoUrls = [];
 
-        // Upload photo if provided
-        if (photoInput.files && photoInput.files[0]) {
-          const file = photoInput.files[0];
-          const cleanExt = file.name.split('.').pop().toLowerCase() || 'jpg';
-          const fileName = `review_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${cleanExt}`;
-
-          // Try bucket creation if needed
+        // Upload photos to review-photos bucket if provided
+        if (photoInput.files && photoInput.files.length > 0) {
+          // Ensure review-photos bucket exists
           try {
             await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
               method: 'POST',
@@ -1016,30 +1061,39 @@
               },
               body: JSON.stringify({ id: 'review-photos', name: 'review-photos', public: true })
             });
-          } catch (_) {
-            // Handled or exists
-          }
+          } catch (_) {}
 
-          // Try file upload
-          try {
-            const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/review-photos/${fileName}`, {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': file.type || 'image/jpeg'
-              },
-              body: file
-            });
-            if (uploadRes.ok) {
-              photo_url = `${SUPABASE_URL}/storage/v1/object/public/review-photos/${fileName}`;
-            } else {
-              console.warn('Photo upload response not ok:', uploadRes.status);
+          const files = Array.from(photoInput.files);
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const filename = `${Date.now()}_${file.name}`;
+
+            try {
+              const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/review-photos/${encodeURIComponent(filename)}`, {
+                method: 'POST',
+                headers: {
+                  'apikey': SUPABASE_KEY,
+                  'Authorization': `Bearer ${SUPABASE_KEY}`,
+                  'Content-Type': file.type || 'image/jpeg'
+                },
+                body: file
+              });
+
+              if (uploadRes.ok) {
+                photoUrls.push(`${SUPABASE_URL}/storage/v1/object/public/review-photos/${filename}`);
+              } else {
+                const dataUrl = await readFileAsDataUrl(file);
+                photoUrls.push(dataUrl);
+              }
+            } catch (uploadErr) {
+              console.warn('Review photo upload fallback:', uploadErr);
+              const dataUrl = await readFileAsDataUrl(file);
+              photoUrls.push(dataUrl);
             }
-          } catch (uploadErr) {
-            console.warn('Photo upload failed:', uploadErr);
           }
         }
+
+        const photo_url = photoUrls.length > 0 ? JSON.stringify(photoUrls) : null;
 
         // Insert review into Supabase "reviews" table
         const insertPayload = {
