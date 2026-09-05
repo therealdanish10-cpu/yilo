@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Gallery &mdash; Yilo by Achieng</title>
+  <meta name="description" content="Explore our portfolio of curated luxury events, weddings, corporate experiences, and private celebrations across Kenya." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%233B0F2F'/><text y='.9em' font-size='80' font-family='serif' fill='%23C9A24B' x='15'>Y</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ====== RESET & BASE ====== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --plum: #3B0F2F;
+      --gold: #C9A24B;
+      --gold-dark: #a8842e;
+      --ivory: #F7F3EC;
+      --charcoal: #1F1F1F;
+      --rose: #C89BAA;
+    }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--ivory);
+      color: var(--charcoal);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+    .script { font-family: 'Great Vibes', cursive; }
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    .container { width: min(1200px, 92%); margin-inline: auto; }
+
+    /* ====== NAVBAR ====== */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 1.4rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(59, 15, 47, 0.92);
+      backdrop-filter: blur(10px);
+      transition: background .4s ease, padding .4s ease, box-shadow .4s ease;
+    }
+    #navbar.scrolled {
+      background: var(--plum);
+      padding: .9rem 2.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-weight: 700;
+      font-size: 2rem; color: var(--gold); letter-spacing: .04em; flex-shrink: 0;
+      transition: opacity .3s ease;
+    }
+    .nav-logo:hover { opacity: .9; }
+    .nav-links {
+      display: flex; gap: 2.5rem;
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .nav-links a {
+      font-family: 'Montserrat', sans-serif; font-size: .72rem;
+      font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ivory); transition: color .3s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--gold); }
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; background: none; border: none; padding: 4px;
+    }
+    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--ivory); transition: all .3s; }
+
+    /* Mobile nav */
+    .mobile-nav {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: var(--plum);
+      flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      font-family: 'Montserrat', sans-serif; font-size: 1.1rem;
+      letter-spacing: .15em; text-transform: uppercase; color: var(--ivory); transition: color .3s;
+    }
+    .mobile-nav a:hover, .mobile-nav a.active { color: var(--gold); }
+    .mobile-nav-close {
+      position: absolute; top: 1.5rem; right: 2rem;
+      font-size: 2rem; color: var(--ivory); cursor: pointer; background: none; border: none;
+    }
+
+    /* ====== HERO BANNER ====== */
+    .gallery-hero {
+      background: var(--plum);
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      padding-top: 50px;
+      overflow: hidden;
+    }
+    .gallery-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(201,162,75,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .gallery-hero-ornament {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 0.6rem;
+    }
+    .gallery-hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 52px;
+      color: var(--ivory);
+      font-weight: 700;
+      letter-spacing: .02em;
+      line-height: 1.15;
+      margin-bottom: 0.35rem;
+    }
+    .gallery-hero-subtitle {
+      font-family: 'Great Vibes', cursive;
+      font-size: 26px;
+      color: var(--gold);
+      line-height: 1.3;
+    }
+
+    /* ====== CATEGORY FILTER BAR ====== */
+    .filter-section {
+      background: var(--ivory);
+      padding: 2.8rem 1rem 2rem;
+      text-align: center;
+    }
+    .filter-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .filter-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.65rem 1.4rem;
+      background: var(--ivory);
+      color: var(--plum);
+      border: 1.5px solid var(--gold);
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      outline: none;
+      user-select: none;
+    }
+    .filter-btn:hover {
+      background: rgba(201, 162, 75, 0.15);
+      transform: translateY(-2px);
+    }
+    .filter-btn.active {
+      background: var(--plum);
+      color: var(--ivory);
+      border-color: var(--plum);
+      box-shadow: 0 4px 14px rgba(59, 15, 47, 0.28);
+      transform: translateY(-2px);
+    }
+
+    /* ====== GALLERY MAIN & GRID ====== */
+    .gallery-main {
+      flex: 1;
+      padding-bottom: 5rem;
+      background: var(--ivory);
+    }
+    .gallery-masonry {
+      column-count: 3;
+      column-gap: 1.5rem;
+      transition: opacity 0.3s ease;
+    }
+    .gallery-card {
+      break-inside: avoid;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+      overflow: hidden;
+      position: relative;
+      background: var(--plum);
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+      opacity: 0;
+      animation: galleryItemFadeIn 0.55s ease forwards;
+    }
+    .gallery-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(59, 15, 47, 0.2);
+    }
+    @keyframes galleryItemFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card Image */
+    .gallery-card-img-wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      display: block;
+    }
+    .gallery-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+      opacity: 0;
+    }
+    .gallery-card img.loaded {
+      opacity: 1;
+    }
+    .gallery-card:hover img {
+      transform: scale(1.04);
+    }
+
+    /* Placeholder Box (if no photo or placeholder item) */
+    .gallery-placeholder-box {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--plum);
+      position: relative;
+      transition: background 0.3s ease;
+    }
+    .gallery-card:hover .gallery-placeholder-box {
+      background: #461239;
+    }
+    .gallery-placeholder-box svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--gold);
+      fill: none;
+      opacity: 0.9;
+      transition: transform 0.3s ease;
+    }
+    .gallery-card:hover .gallery-placeholder-box svg {
+      transform: scale(1.1);
+    }
+
+    /* Hover Overlay (deep plum 50% opacity, revealing caption in Great Vibes ivory) */
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(59, 15, 47, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 2;
+    }
+    .gallery-card:hover .gallery-overlay {
+      opacity: 1;
+    }
+    .gallery-overlay-caption {
+      font-family: 'Great Vibes', cursive;
+      font-size: 1.85rem;
+      color: var(--ivory);
+      line-height: 1.35;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transform: translateY(10px);
+      transition: transform 0.4s ease;
+    }
+    .gallery-card:hover .gallery-overlay-caption {
+      transform: translateY(0);
+    }
+
+    /* ====== FULLSCREEN LIGHTBOX ====== */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(15, 5, 12, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      padding: 2rem;
+    }
+    .lightbox.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 1.8rem;
+      right: 2.2rem;
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 2.2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 8px;
+      transition: transform 0.25s ease, color 0.25s ease;
+      z-index: 2020;
+    }
+    .lightbox-close:hover {
+      color: var(--ivory);
+      transform: scale(1.15) rotate(90deg);
+    }
+    .lightbox-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(59, 15, 47, 0.7);
+      border: 1.5px solid var(--gold);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 2020;
+      outline: none;
+    }
+    .lightbox-arrow svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--gold);
+      stroke-width: 2;
+      fill: none;
+      transition: stroke 0.3s ease;
+    }
+    .lightbox-arrow:hover {
+      background: var(--gold);
+    }
+    .lightbox-arrow:hover svg {
+      stroke: var(--plum);
+    }
+    .lightbox-prev { left: 2rem; }
+    .lightbox-next { right: 2rem; }
+
+    .lightbox-content {
+      max-width: 85vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      user-select: none;
+    }
+    .lightbox-media {
+      max-width: 82vw;
+      max-height: 72vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-media img {
+      max-width: 82vw;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .lightbox-placeholder-card {
+      width: 500px;
+      max-width: 80vw;
+      aspect-ratio: 4 / 3;
+      background: var(--plum);
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+    .lightbox-placeholder-card svg {
+      width: 52px;
+      height: 52px;
+      stroke: var(--gold);
+      fill: none;
+      stroke-width: 1.5;
+    }
+    .lightbox-caption {
+      margin-top: 1.2rem;
+      font-family: 'Great Vibes', cursive;
+      font-size: 2rem;
+      color: var(--gold);
+      line-height: 1.3;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+    }
+
+    /* ====== BACK TO TOP BUTTON ====== */
+    #backToTop {
+      position: fixed;
+      bottom: 2.2rem;
+      right: 2.2rem;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--plum);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease, background 0.3s ease;
+      z-index: 990;
+      outline: none;
+    }
+    #backToTop.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    #backToTop:hover {
+      background: var(--ivory);
+      color: var(--plum);
+      box-shadow: 0 8px 25px rgba(201, 162, 75, 0.45);
+      transform: translateY(-4px);
+    }
+    #backToTop svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--plum);
+      stroke-width: 2.5;
+      fill: none;
+      transition: stroke 0.3s ease;
+    }
+
+    /* ====== FOOTER ====== */
+    footer {
+      background: var(--charcoal);
+      padding: 80px 0 0;
+      margin-top: auto;
+    }
+    .footer-inner {
+      width: min(1200px, 92%);
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1.4fr 1.4fr;
+      gap: 60px;
+      padding-bottom: 80px;
+    }
+
+    /* Col 1 brand */
+    .ft-brand-logo {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+    .ft-brand-logo .ft-yilo {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--ivory);
+      line-height: 1;
+      letter-spacing: .03em;
+    }
+    .ft-brand-logo .ft-by {
+      font-family: 'Great Vibes', cursive;
+      font-size: 28px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .ft-tagline {
+      font-family: 'Great Vibes', cursive;
+      font-size: 20px;
+      color: var(--gold);
+      font-style: italic;
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 0;
+    }
+    .ft-desc {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(247,243,236,.6);
+      margin-top: 16px;
+      max-width: 280px;
+    }
+
+    /* Column headings */
+    .ft-col-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+
+    /* Col 2 quick links */
+    .ft-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .ft-links a {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 15px;
+      line-height: 2.2;
+      color: rgba(247,243,236,.75);
+      transition: color .3s;
+    }
+    .ft-links a:hover { color: var(--gold); }
+
+    /* Col 3 contact */
+    .ft-contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .ft-contact-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 15px;
+      line-height: 2.2;
+      color: rgba(247,243,236,.75);
+    }
+    .ft-contact-item svg {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+    }
+    .ft-contact-item svg:not([fill]) {
+      stroke: var(--gold);
+      fill: none;
+    }
+    .ft-contact-item a {
+      color: rgba(247,243,236,.75);
+      transition: color .3s;
+    }
+    .ft-contact-item a:hover { color: var(--gold); }
+
+    /* Col 4 social */
+    .ft-social-desc {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 15px;
+      line-height: 2.2;
+      color: rgba(247,243,236,.6);
+      margin-bottom: 24px;
+    }
+    .ft-social-icons {
+      display: flex;
+      gap: 12px;
+    }
+    .ft-social-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+      transition: background .3s;
+      text-decoration: none;
+    }
+    .ft-social-btn:hover { background: var(--gold); }
+    .ft-social-btn svg {
+      transition: stroke .3s, fill .3s;
+    }
+    .ft-social-btn:hover svg[stroke] { stroke: var(--charcoal); }
+    .ft-social-btn:hover svg circle[fill="#C9A24B"] { fill: var(--charcoal); }
+    .ft-social-btn:hover svg[fill="#C9A24B"] { fill: var(--charcoal); }
+    .ft-social-btn:hover svg[fill="#C9A24B"] path { fill: var(--charcoal); }
+
+    /* Bottom bar */
+    .footer-bar {
+      border-top: 1px solid rgba(201,162,75,.3);
+      width: min(1200px, 92%);
+      margin-inline: auto;
+      margin-top: 0;
+      padding: 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer-bar-left {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      color: rgba(247,243,236,.45);
+      letter-spacing: .04em;
+    }
+    .footer-bar-right {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ====== RESPONSIVE ====== */
+    @media (max-width: 990px) {
+      .gallery-masonry { column-count: 2; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .lightbox-arrow { width: 44px; height: 44px; }
+      .lightbox-prev { left: 1rem; }
+      .lightbox-next { right: 1rem; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .gallery-hero-title { font-size: 40px; }
+      .gallery-hero-subtitle { font-size: 22px; }
+      .filter-btn { font-size: 0.74rem; padding: 0.55rem 1.1rem; }
+    }
+    @media (max-width: 600px) {
+      .gallery-masonry { column-count: 1; }
+      .footer-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footer-bar { flex-direction: column; text-align: center; }
+      .gallery-hero { height: 280px; }
+      .gallery-hero-title { font-size: 34px; }
+      .gallery-hero-subtitle { font-size: 20px; }
+      .lightbox-caption { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav" id="mobileNav">
+    <button class="mobile-nav-close" id="mobileClose" aria-label="Close menu">&times;</button>
+    <a href="index.html#hero" onclick="closeMobileNav()">Home</a>
+    <a href="index.html#why" onclick="closeMobileNav()">About</a>
+    <a href="index.html#events" onclick="closeMobileNav()">Services</a>
+    <a href="gallery.html" class="active" onclick="closeMobileNav()">Gallery</a>
+    <a href="index.html#contact" onclick="closeMobileNav()">Contact</a>
+  </nav>
+
+  <!-- NAVBAR -->
+  <header>
+    <nav id="navbar" aria-label="Main navigation">
+      <a href="index.html" class="nav-logo">YILO</a>
+      <div class="nav-links">
+        <a href="index.html#hero">Home</a>
+        <a href="index.html#why">About</a>
+        <a href="index.html#events">Services</a>
+        <a href="gallery.html" class="active">Gallery</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+      <button class="nav-hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="gallery-hero">
+    <div class="gallery-hero-ornament" aria-hidden="true">
+      <svg viewBox="0 0 130 45" width="100" height="34" fill="none" stroke="#C9A24B" stroke-width="1.1" stroke-linecap="round">
+        <path d="M65,22 Q52,10 34,10 Q23,10 18,16"/>
+        <path d="M18,16 Q14,11 16,7"/><path d="M18,16 Q11,18 9,25"/>
+        <path d="M34,11 Q30,4 32,0"/>
+        <path d="M65,22 Q78,10 96,10 Q107,10 112,16"/>
+        <path d="M112,16 Q116,11 114,7"/><path d="M112,16 Q119,18 121,25"/>
+        <path d="M96,11 Q100,4 98,0"/>
+        <circle cx="65" cy="22" r="3.5"/>
+      </svg>
+    </div>
+    <h1 class="gallery-hero-title">Our Gallery</h1>
+    <p class="gallery-hero-subtitle">Moments we've been trusted with</p>
+  </section>
+
+  <!-- CATEGORY FILTER BAR -->
+  <section class="filter-section">
+    <div class="filter-bar" id="filterBar" role="tablist" aria-label="Gallery category filters">
+      <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All</button>
+      <button class="filter-btn" data-filter="weddings" role="tab" aria-selected="false">Weddings</button>
+      <button class="filter-btn" data-filter="birthdays" role="tab" aria-selected="false">Birthdays</button>
+      <button class="filter-btn" data-filter="corporate" role="tab" aria-selected="false">Corporate</button>
+      <button class="filter-btn" data-filter="private dinners" role="tab" aria-selected="false">Private Dinners</button>
+      <button class="filter-btn" data-filter="milestones" role="tab" aria-selected="false">Milestones</button>
+      <button class="filter-btn" data-filter="other" role="tab" aria-selected="false">Other</button>
+    </div>
+  </section>
+
+  <!-- GALLERY MAIN GRID -->
+  <main class="gallery-main">
+    <div class="container">
+      <div class="gallery-masonry" id="galleryMasonry">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <!-- FULLSCREEN LIGHTBOX -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close preview">&times;</button>
+    <button class="lightbox-arrow lightbox-prev" id="lightboxPrev" aria-label="Previous image">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <button class="lightbox-arrow lightbox-next" id="lightboxNext" aria-label="Next image">
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+    <div class="lightbox-content" id="lightboxContent">
+      <div class="lightbox-media" id="lightboxMedia"></div>
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <!-- BACK TO TOP BUTTON -->
+  <button id="backToTop" aria-label="Back to top">
+    <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  </button>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+
+      <!-- Col 1: Brand -->
+      <div>
+        <div class="ft-brand-logo">
+          <span class="ft-yilo">YILO</span>
+          <span class="ft-by">by Achieng</span>
+        </div>
+        <span class="ft-tagline">Curating Moments. Creating Memories.</span>
+        <p class="ft-desc">From intimate gatherings to corporate experiences, Yilo takes care of everything behind the scenes &mdash; so you can be fully present for the moments that matter.</p>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div>
+        <p class="ft-col-heading">Quick Links</p>
+        <nav class="ft-links" aria-label="Footer navigation">
+          <a href="index.html#hero">Home</a>
+          <a href="index.html#why">About</a>
+          <a href="index.html#events">Services</a>
+          <a href="index.html#contact">Contact</a>
+        </nav>
+      </div>
+
+      <!-- Col 3: Get In Touch -->
+      <div>
+        <p class="ft-col-heading">Get In Touch</p>
+        <div class="ft-contact-list">
+          <div class="ft-contact-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#C9A24B" aria-hidden="true">
+              <path d="M16.6 14c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1s-.6.8-.8 1c-.1.2-.3.2-.5.1c-.7-.3-1.4-.7-2-1.2c-.5-.5-1-1.1-1.4-1.7c-.1-.2 0-.4.1-.5s.2-.3.4-.4c.1-.1.2-.3.2-.4c.1-.1.1-.3 0-.4S9.7 8.5 9.5 8c-.1-.7-.3-.7-.5-.7h-.5c-.2 0-.5.2-.6.3Q7 8.5 7 9.7c.1.9.4 1.8 1 2.6c1.1 1.6 2.5 2.9 4.2 3.7c.5.2.9.4 1.4.5c.5.2 1 .2 1.6.1c.7-.1 1.3-.6 1.7-1.2c.2-.4.2-.8.1-1.2zm2.5-9.1C15.2 1 8.9 1 5 4.9c-3.2 3.2-3.8 8.1-1.6 12L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2c5.5 0 9.9-4.4 9.9-9.9c.1-2.6-1-5.1-2.8-7m-2.7 14c-1.3.8-2.8 1.3-4.4 1.3c-1.5 0-2.9-.4-4.2-1.1l-.3-.2l-3.1.8l.8-3l-.2-.3c-2.4-4-1.2-9 2.7-11.5S16.6 3.7 19 7.5c2.4 3.9 1.3 9-2.6 11.4"/>
+            </svg>
+            <span>+254 7XX XXX XXX</span>
+          </div>
+          <div class="ft-contact-item">
+            <svg viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            <a href="https://www.instagram.com/yilobyachieng" target="_blank" rel="noopener">@yilobyachieng</a>
+          </div>
+          <div class="ft-contact-item">
+            <svg viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Based in Nairobi, Kenya</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 4: Stay Updated -->
+      <div>
+        <p class="ft-col-heading">Stay Updated</p>
+        <p class="ft-social-desc">Follow us for event inspiration and behind-the-scenes moments.</p>
+        <div class="ft-social-icons">
+          <a href="https://www.instagram.com/yilobyachieng" target="_blank" rel="noopener" class="ft-social-btn" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A24B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="0.5" fill="#C9A24B"/>
+            </svg>
+          </a>
+          <a href="https://wa.me/254700000000" target="_blank" rel="noopener" class="ft-social-btn" aria-label="WhatsApp">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#C9A24B" aria-hidden="true">
+              <path d="M16.6 14c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1s-.6.8-.8 1c-.1.2-.3.2-.5.1c-.7-.3-1.4-.7-2-1.2c-.5-.5-1-1.1-1.4-1.7c-.1-.2 0-.4.1-.5s.2-.3.4-.4c.1-.1.2-.3.2-.4c.1-.1.1-.3 0-.4S9.7 8.5 9.5 8c-.1-.7-.3-.7-.5-.7h-.5c-.2 0-.5.2-.6.3Q7 8.5 7 9.7c.1.9.4 1.8 1 2.6c1.1 1.6 2.5 2.9 4.2 3.7c.5.2.9.4 1.4.5c.5.2 1 .2 1.6.1c.7-.1 1.3-.6 1.7-1.2c.2-.4.2-.8.1-1.2zm2.5-9.1C15.2 1 8.9 1 5 4.9c-3.2 3.2-3.8 8.1-1.6 12L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2c5.5 0 9.9-4.4 9.9-9.9c.1-2.6-1-5.1-2.8-7m-2.7 14c-1.3.8-2.8 1.3-4.4 1.3c-1.5 0-2.9-.4-4.2-1.1l-.3-.2l-3.1.8l.8-3l-.2-.3c-2.4-4-1.2-9 2.7-11.5S16.6 3.7 19 7.5c2.4 3.9 1.3 9-2.6 11.4"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="footer-bar">
+      <span class="footer-bar-left">&copy; 2025 Yilo by Achieng. All rights reserved.</span>
+      <span class="footer-bar-right">Curating Moments &middot; Creating Memories</span>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    /* ---- Supabase Config ---- */
+    const SUPABASE_URL = 'https://nlrkdzbuysgdagycslhc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_n3VHFxI3TyrQYleFJf_-rA_2Yy1X7M0';
+
+    /* ---- 9 Styled Fallback Placeholders (with categories & luxury captions) ---- */
+    const FALLBACK_ITEMS = [
+      { id: 'f1', title: "Whispers of Romance", category: "weddings" },
+      { id: 'f2', title: "Golden Celebrations", category: "birthdays" },
+      { id: 'f3', title: "Executive Elegance", category: "corporate" },
+      { id: 'f4', title: "Candlelit Soirée", category: "private dinners" },
+      { id: 'f5', title: "Cherished Milestones", category: "milestones" },
+      { id: 'f6', title: "Grand Nuptials", category: "weddings" },
+      { id: 'f7', title: "Summit of Distinction", category: "corporate" },
+      { id: 'f8', title: "Intimate Gathering", category: "private dinners" },
+      { id: 'f9', title: "Timeless Memories", category: "other" }
+    ];
+
+    let allGalleryItems = [];
+    let currentFilter = 'all';
+    let visibleItems = [];
+    let currentLightboxIndex = 0;
+
+    /* ---- Navbar Scroll & Mobile Menu ---- */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    const hamburger  = document.getElementById('hamburger');
+    const mobileNav  = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileClose');
+    hamburger.addEventListener('click', () => { mobileNav.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); });
+    mobileClose.addEventListener('click', closeMobileNav);
+    function closeMobileNav() { mobileNav.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); }
+
+    /* ---- Back to Top Button ---- */
+    const backToTopBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    /* ---- Fetch Images from Supabase ---- */
+    async function initGallery() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/gallery?select=*&order=created_at.desc`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            allGalleryItems = data;
+          } else {
+            allGalleryItems = FALLBACK_ITEMS;
+          }
+        } else {
+          allGalleryItems = FALLBACK_ITEMS;
+        }
+      } catch (err) {
+        console.warn('Could not load gallery from Supabase:', err);
+        allGalleryItems = FALLBACK_ITEMS;
+      }
+      try {
+        const localGallery = JSON.parse(localStorage.getItem('yilo_admin_local_gallery') || '[]');
+        if (localGallery.length > 0) {
+          const ids = new Set(allGalleryItems.map(i => i.id));
+          allGalleryItems = [...localGallery.filter(i => !ids.has(i.id)), ...allGalleryItems];
+        }
+      } catch (_) {}
+      renderGallery();
+    }
+
+    /* ---- Category Filter Logic ---- */
+    function filterItems(items, filter) {
+      if (filter === 'all') return items;
+      return items.filter(item => {
+        const cat = (item.category || item.event_type || item.type || item.tag || '').toLowerCase().trim();
+        if (filter === 'other') {
+          return !['weddings', 'wedding', 'birthdays', 'birthday', 'corporate', 'private dinners', 'private dinner', 'milestones', 'milestone'].includes(cat);
+        }
+        if (filter === 'weddings') return cat.includes('wedding');
+        if (filter === 'birthdays') return cat.includes('birthday');
+        if (filter === 'corporate') return cat.includes('corporate');
+        if (filter === 'private dinners') return cat.includes('dinner') || cat.includes('private');
+        if (filter === 'milestones') return cat.includes('milestone');
+        return cat === filter;
+      });
+    }
+
+    /* ---- Render Gallery Grid ---- */
+    const masonryEl = document.getElementById('galleryMasonry');
+
+    function renderGallery() {
+      masonryEl.style.opacity = '0';
+      
+      setTimeout(() => {
+        masonryEl.innerHTML = '';
+        visibleItems = filterItems(allGalleryItems, currentFilter);
+
+        if (visibleItems.length === 0) {
+          masonryEl.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--charcoal);">
+              <p style="font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--plum); margin-bottom: 0.5rem;">No moments found in this category.</p>
+              <p style="font-family: 'Great Vibes', cursive; font-size: 1.5rem; color: var(--gold);">More memories coming soon.</p>
+            </div>
+          `;
+          masonryEl.style.opacity = '1';
+          return;
+        }
+
+        visibleItems.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = 'gallery-card';
+          card.style.animationDelay = `${(index % 9) * 0.06}s`;
+
+          const imgUrl = item.image_url || item.url || item.image || item.photo_url || item.src;
+          const caption = item.title || item.caption || item.event_name || 'Every event has a story';
+
+          const cameraSvg = `
+            <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          `;
+
+          if (imgUrl) {
+            card.innerHTML = `
+              <div class="gallery-card-img-wrap">
+                <img src="${imgUrl}" alt="${caption}" onload="this.classList.add('loaded')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="gallery-placeholder-box" style="display:none;">${cameraSvg}</div>
+                <div class="gallery-overlay">
+                  <span class="gallery-overlay-caption">${caption}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            card.innerHTML = `
+              <div class="gallery-placeholder-box">
+                ${cameraSvg}
+                <div class="gallery-overlay">
+                  <span class="gallery-overlay-caption">${caption}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          card.addEventListener('click', () => openLightbox(index));
+          masonryEl.appendChild(card);
+        });
+
+        masonryEl.style.opacity = '1';
+      }, 150);
+    }
+
+    /* ---- Filter Button Click Listeners ---- */
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        currentFilter = btn.getAttribute('data-filter');
+        renderGallery();
+      });
+    });
+
+    /* ---- Lightbox Logic ---- */
+    const lightbox = document.getElementById('lightbox');
+    const lightboxMedia = document.getElementById('lightboxMedia');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
+
+    function openLightbox(index) {
+      currentLightboxIndex = index;
+      updateLightbox();
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function updateLightbox() {
+      if (visibleItems.length === 0) return;
+      const item = visibleItems[currentLightboxIndex];
+      const imgUrl = item.image_url || item.url || item.image || item.photo_url || item.src;
+      const caption = item.title || item.caption || item.event_name || 'Every event has a story';
+
+      if (imgUrl) {
+        lightboxMedia.innerHTML = `<img src="${imgUrl}" alt="${caption}" />`;
+      } else {
+        lightboxMedia.innerHTML = `
+          <div class="lightbox-placeholder-card">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span style="font-family:'Montserrat',sans-serif;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--ivory);opacity:0.8;">Yilo Moments</span>
+          </div>
+        `;
+      }
+      lightboxCaption.textContent = caption;
+    }
+
+    function prevLightbox() {
+      if (visibleItems.length <= 1) return;
+      currentLightboxIndex = (currentLightboxIndex - 1 + visibleItems.length) % visibleItems.length;
+      updateLightbox();
+    }
+
+    function nextLightbox() {
+      if (visibleItems.length <= 1) return;
+      currentLightboxIndex = (currentLightboxIndex + 1) % visibleItems.length;
+      updateLightbox();
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); prevLightbox(); });
+    lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); nextLightbox(); });
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox || e.target.id === 'lightboxContent') {
+        closeLightbox();
+      }
+    });
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') prevLightbox();
+      if (e.key === 'ArrowRight') nextLightbox();
+    });
+
+    // Mobile touch swiping on lightbox
+    let touchStartX = 0;
+    lightbox.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    lightbox.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      const diff = touchEndX - touchStartX;
+      if (diff > 50) prevLightbox();
+      if (diff < -50) nextLightbox();
+    }, { passive: true });
+
+    // Initialize
+    initGallery();
+  </script>
+</body>
+</html>

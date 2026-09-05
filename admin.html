@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal &mdash; Yilo by Achieng</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%233B0F2F'/><text y='.9em' font-size='80' font-family='serif' fill='%23C9A24B' x='15'>Y</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ====== RESET & ADMIN THEME ====== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --plum: #3B0F2F;
+      --plum-light: #521642;
+      --gold: #C9A24B;
+      --gold-dark: #a8842e;
+      --ivory: #F7F3EC;
+      --charcoal: #1F1F1F;
+      --charcoal-dark: #161616;
+      --charcoal-card: #282828;
+      --rose: #C89BAA;
+      --rose-dark: #a86c80;
+      --success-green: #2e7d32;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--charcoal);
+      color: var(--charcoal);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+    button, input, select, textarea { font-family: 'Montserrat', sans-serif; }
+
+    /* ====== LOGIN SCREEN ====== */
+    #loginScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: var(--plum);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #loginScreen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--charcoal);
+      border: 1.5px solid var(--gold);
+      border-radius: 12px;
+      padding: 48px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
+      animation: cardPopIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes cardPopIn {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .login-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.2rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .login-sub {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--ivory);
+      opacity: 0.85;
+      margin-bottom: 2rem;
+    }
+    .login-group {
+      margin-bottom: 1.1rem;
+      text-align: left;
+    }
+    .login-input {
+      width: 100%;
+      padding: 0.92rem 1.1rem;
+      background: var(--ivory);
+      border: 1.5px solid var(--gold);
+      border-radius: 6px;
+      color: var(--plum);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      outline: none;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+    .login-input:focus {
+      box-shadow: 0 0 12px rgba(201, 162, 75, 0.6);
+    }
+    .login-input::placeholder {
+      color: rgba(59, 15, 47, 0.55);
+      font-weight: 400;
+    }
+    .login-error {
+      color: var(--rose);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      min-height: 20px;
+      margin-bottom: 1rem;
+      text-align: center;
+      display: none;
+      line-height: 1.4;
+    }
+    .login-error.visible {
+      display: block;
+    }
+    .login-success {
+      color: var(--ivory);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      min-height: 20px;
+      margin-bottom: 1.2rem;
+      text-align: center;
+      line-height: 1.4;
+      display: none;
+    }
+    .login-success.visible {
+      display: block;
+    }
+    .btn-login {
+      width: 100%;
+      padding: 0.95rem;
+      background: var(--gold);
+      color: var(--plum);
+      border: none;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    }
+    .btn-login:hover:not(:disabled) {
+      background: var(--gold-dark);
+      color: var(--ivory);
+      transform: translateY(-2px);
+    }
+    .btn-login:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .login-footer-link {
+      margin-top: 1.4rem;
+      text-align: center;
+    }
+    .login-link {
+      color: var(--gold);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity 0.2s, text-decoration 0.2s;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .login-link:hover {
+      text-decoration: underline;
+      opacity: 0.85;
+    }
+
+    /* ====== DASHBOARD SHELL ====== */
+    #dashboardShell {
+      display: none;
+      min-height: 100vh;
+      width: 100%;
+      background: var(--charcoal);
+    }
+    #dashboardShell.active {
+      display: flex;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      width: 270px;
+      min-width: 270px;
+      background: var(--charcoal-dark);
+      border-right: 1px solid rgba(201, 162, 75, 0.25);
+      padding: 32px 18px;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+    .sidebar-brand {
+      padding: 0 12px 24px;
+      border-bottom: 1px solid rgba(201, 162, 75, 0.2);
+      margin-bottom: 24px;
+    }
+    .sidebar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+    .sidebar-tagline {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(247, 243, 236, 0.6);
+      margin-top: 6px;
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: var(--ivory);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s ease;
+      outline: none;
+    }
+    .nav-btn:hover {
+      background: rgba(59, 15, 47, 0.45);
+      color: var(--gold);
+    }
+    .nav-btn.active {
+      background: var(--plum);
+      color: var(--ivory);
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(59, 15, 47, 0.4);
+    }
+    .pending-badge {
+      background: var(--gold);
+      color: var(--plum);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 12px;
+      line-height: 1.4;
+      display: inline-block;
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding-top: 20px;
+      border-top: 1px solid rgba(201, 162, 75, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-side-link {
+      color: rgba(247, 243, 236, 0.65);
+      font-size: 0.78rem;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-side-link:hover {
+      color: var(--gold);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-logout {
+      background: none;
+      border: 1.5px solid var(--rose);
+      color: var(--rose);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      text-align: center;
+    }
+    .btn-logout:hover {
+      background: var(--rose);
+      color: var(--plum);
+    }
+
+    /* Main Content Area */
+    .admin-main {
+      flex: 1;
+      padding: 32px 36px;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    .admin-canvas {
+      background: var(--ivory);
+      border-radius: 14px;
+      padding: 36px 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(201, 162, 75, 0.3);
+      min-height: 85vh;
+      animation: tabFadeIn 0.35s ease;
+    }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Content Header */
+    .content-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(201, 162, 75, 0.25);
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+    }
+    .content-title {
+      font-size: 2.2rem;
+      color: var(--plum);
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .content-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-refresh {
+      background: transparent;
+      border: 1.5px solid var(--gold);
+      color: var(--plum);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-refresh:hover {
+      background: var(--gold);
+      color: var(--plum);
+    }
+    .btn-refresh svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+    }
+
+    /* Sub Tabs (Reviews: Pending vs Approved) */
+    .sub-tabs-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .sub-tab-btn {
+      padding: 8px 22px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1.5px solid var(--gold);
+      background: var(--ivory);
+      color: var(--plum);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sub-tab-btn:hover {
+      background: rgba(201, 162, 75, 0.15);
+    }
+    .sub-tab-btn.active {
+      background: var(--plum);
+      color: var(--ivory);
+      border-color: var(--plum);
+      box-shadow: 0 3px 10px rgba(59, 15, 47, 0.25);
+    }
+    .sub-tab-badge {
+      background: var(--gold);
+      color: var(--plum);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+
+    /* Review Cards List */
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .admin-review-card {
+      background: white;
+      border: 1px solid rgba(201, 162, 75, 0.35);
+      border-radius: 10px;
+      padding: 22px 26px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .admin-review-card:hover {
+      box-shadow: 0 8px 25px rgba(59, 15, 47, 0.1);
+      transform: translateY(-2px);
+    }
+    .review-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .reviewer-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--plum);
+    }
+    .review-meta-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .event-type-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-dark);
+      background: rgba(201, 162, 75, 0.12);
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(201, 162, 75, 0.3);
+    }
+    .review-stars {
+      color: var(--gold);
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+    }
+    .review-body-row {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .review-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--gold);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .review-message {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #333;
+      font-style: italic;
+      flex: 1;
+    }
+    .review-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #f0ebe2;
+      padding-top: 12px;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      color: #888;
+    }
+    .card-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-action-approve {
+      background: var(--gold);
+      color: var(--plum);
+      border: none;
+      padding: 6px 18px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-action-approve:hover {
+      background: var(--gold-dark);
+      color: var(--ivory);
+      transform: translateY(-1px);
+    }
+    .btn-action-reject {
+      background: var(--rose);
+      color: white;
+      border: none;
+      padding: 6px 18px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-action-reject:hover {
+      background: var(--rose-dark);
+      transform: translateY(-1px);
+    }
+    .btn-action-remove {
+      background: transparent;
+      border: 1.5px solid var(--rose);
+      color: var(--rose-dark);
+      padding: 6px 16px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-action-remove:hover {
+      background: var(--rose);
+      color: white;
+    }
+
+    /* ====== GALLERY GRID ====== */
+    .admin-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .admin-gallery-card {
+      background: white;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .admin-gallery-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(59, 15, 47, 0.15);
+    }
+    .admin-gallery-thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: var(--plum);
+      display: block;
+    }
+    .admin-gallery-info {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .admin-gallery-cat {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .admin-gallery-caption {
+      font-size: 0.88rem;
+      color: var(--charcoal);
+      line-height: 1.4;
+      flex: 1;
+    }
+    .btn-delete-photo {
+      background: var(--rose);
+      color: white;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 4px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      align-self: flex-start;
+      margin-top: 6px;
+      transition: background 0.2s ease;
+    }
+    .btn-delete-photo:hover {
+      background: var(--rose-dark);
+    }
+
+    /* ====== FORMS (Add Review & Add Photo) ====== */
+    .admin-form-container {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 10px 0;
+    }
+    .form-group {
+      margin-bottom: 1.4rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .form-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--charcoal);
+      margin-bottom: 0.45rem;
+    }
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: white;
+      border: 1px solid var(--gold);
+      border-radius: 6px;
+      color: var(--plum);
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 10px rgba(201, 162, 75, 0.4);
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.6;
+    }
+
+    /* Interactive Stars in Add Review Form */
+    .interactive-stars {
+      display: inline-flex;
+      gap: 6px;
+      font-size: 2.2rem;
+      color: #dfd8ce;
+      cursor: pointer;
+      user-select: none;
+    }
+    .form-star-btn {
+      background: none;
+      border: none;
+      font-size: 2.2rem;
+      color: #dfd8ce;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 2px;
+      transition: color 0.2s;
+    }
+    .form-star-btn.active,
+    .form-star-btn.hover-active {
+      color: var(--gold);
+    }
+
+    /* File drop upload box */
+    .file-box {
+      border: 1.5px dashed var(--gold);
+      border-radius: 6px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(201, 162, 75, 0.05);
+      position: relative;
+      transition: background 0.3s;
+    }
+    .file-box:hover {
+      background: rgba(201, 162, 75, 0.12);
+    }
+    .file-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .file-preview-name {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gold);
+      word-break: break-all;
+    }
+
+    /* Buttons */
+    .btn-admin-submit {
+      width: 100%;
+      padding: 1rem;
+      background: var(--gold);
+      color: var(--plum);
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-top: 0.5rem;
+    }
+    .btn-admin-submit:hover:not(:disabled) {
+      background: var(--gold-dark);
+      color: var(--ivory);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(168, 132, 46, 0.35);
+    }
+    .btn-admin-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: #666;
+    }
+    .empty-state-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--plum);
+      margin-bottom: 0.5rem;
+    }
+    .empty-state-sub {
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3.5px solid rgba(201, 162, 75, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 3rem auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ====== TOAST NOTIFICATIONS ====== */
+    #toastContainer {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 280px;
+      max-width: 380px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      pointer-events: auto;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast.hide {
+      opacity: 0;
+      transform: translateY(10px) scale(0.95);
+      transition: all 0.35s ease;
+    }
+    .toast-success {
+      background: var(--plum);
+      border: 1.5px solid var(--gold);
+      color: var(--ivory);
+    }
+    .toast-error {
+      background: #75293e;
+      border: 1.5px solid var(--rose);
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      #dashboardShell.active { flex-direction: column; }
+      .admin-sidebar { width: 100%; min-width: 100%; border-right: none; border-bottom: 1px solid rgba(201, 162, 75, 0.25); }
+      .admin-gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-canvas { padding: 24px 20px; }
+      .admin-main { padding: 20px 16px; }
+    }
+    @media (max-width: 600px) {
+      .admin-gallery-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== LOGIN SCREEN ==================== -->
+  <div id="loginScreen">
+    
+    <!-- Login Card -->
+    <div class="login-card" id="loginCard">
+      <h1 class="login-logo">YILO</h1>
+      <p class="login-sub">Admin Panel</p>
+      
+      <form id="loginForm" novalidate>
+        <div class="login-group">
+          <input type="email" id="loginEmail" class="login-input" placeholder="Admin Email" autocomplete="email" required />
+        </div>
+        <div class="login-group">
+          <input type="password" id="loginPassword" class="login-input" placeholder="Password" autocomplete="current-password" required />
+        </div>
+        <div class="login-error" id="loginError"></div>
+        <button type="submit" class="btn-login" id="loginBtn">Login</button>
+        <div class="login-footer-link">
+          <a href="#" id="forgotPasswordLink" class="login-link">Forgot Password?</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Forgot Password Card -->
+    <div class="login-card" id="forgotCard" style="display: none;">
+      <h1 class="login-logo">YILO</h1>
+      <p class="login-sub">Reset Password</p>
+      
+      <form id="forgotForm" novalidate>
+        <div class="login-group">
+          <input type="email" id="forgotEmail" class="login-input" placeholder="Enter your email" autocomplete="email" required />
+        </div>
+        <div class="login-error" id="forgotError"></div>
+        <div class="login-success" id="forgotSuccess">Check your email for a reset link</div>
+        <button type="submit" class="btn-login" id="forgotBtn">Send Reset Link</button>
+        <div class="login-footer-link">
+          <a href="#" id="backToLoginLink" class="login-link">Back to Login</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- ==================== DASHBOARD SHELL ==================== -->
+  <div id="dashboardShell">
+    
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-logo">YILO</h2>
+        <p class="sidebar-tagline">Administration</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Admin Navigation">
+        <button class="nav-btn active" data-tab="tabReviews">
+          <span>Reviews</span>
+          <span class="pending-badge" id="sidebarPendingBadge">0</span>
+        </button>
+        <button class="nav-btn" data-tab="tabGallery">
+          <span>Gallery</span>
+        </button>
+        <button class="nav-btn" data-tab="tabAddReview">
+          <span>Add Review</span>
+        </button>
+        <button class="nav-btn" data-tab="tabAddPhoto">
+          <span>Add Photo</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="index.html" target="_blank" class="btn-side-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span>View Live Site</span>
+        </a>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <div class="admin-canvas">
+        
+        <!-- Header -->
+        <div class="content-header">
+          <h2 class="content-title" id="currentTabTitle">Reviews</h2>
+          <div class="content-actions">
+            <button class="btn-refresh" id="refreshDataBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 1: REVIEWS -->
+        <section id="tabReviews" class="tab-pane">
+          <div class="sub-tabs-bar">
+            <button class="sub-tab-btn active" id="subTabPending" data-subtab="pending">
+              <span>Pending</span>
+              <span class="sub-tab-badge" id="subTabPendingBadge">0</span>
+            </button>
+            <button class="sub-tab-btn" id="subTabApproved" data-subtab="approved">
+              <span>Approved</span>
+              <span class="sub-tab-badge" id="subTabApprovedBadge" style="background:#521642;color:#F7F3EC;">0</span>
+            </button>
+          </div>
+
+          <!-- Pending Reviews Container -->
+          <div id="pendingReviewsContainer">
+            <div class="spinner" id="pendingReviewsSpinner"></div>
+            <div class="reviews-list" id="pendingReviewsList"></div>
+          </div>
+
+          <!-- Approved Reviews Container -->
+          <div id="approvedReviewsContainer" style="display:none;">
+            <div class="spinner" id="approvedReviewsSpinner"></div>
+            <div class="reviews-list" id="approvedReviewsList"></div>
+          </div>
+        </section>
+
+        <!-- TAB 2: GALLERY -->
+        <section id="tabGallery" class="tab-pane" style="display:none;">
+          <div class="spinner" id="gallerySpinner"></div>
+          <div class="admin-gallery-grid" id="adminGalleryGrid"></div>
+        </section>
+
+        <!-- TAB 3: ADD REVIEW -->
+        <section id="tabAddReview" class="tab-pane" style="display:none;">
+          <div class="admin-form-container">
+            <form id="addReviewForm" novalidate>
+              
+              <div class="form-group">
+                <label for="addRevName" class="form-label">Client Name *</label>
+                <input type="text" id="addRevName" class="form-input" placeholder="e.g. Cynthia Mwangi" required />
+              </div>
+
+              <div class="form-group">
+                <label for="addRevEvent" class="form-label">Event Type *</label>
+                <select id="addRevEvent" class="form-select" required>
+                  <option value="" disabled selected>Select event type...</option>
+                  <option value="Wedding">Wedding</option>
+                  <option value="Birthday">Birthday</option>
+                  <option value="Corporate Event">Corporate Event</option>
+                  <option value="Private Dinner">Private Dinner</option>
+                  <option value="Milestone">Milestone</option>
+                  <option value="Anniversary">Anniversary</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Star Rating *</label>
+                <div class="interactive-stars" id="adminStarWrap">
+                  <button type="button" class="form-star-btn active" data-val="1">&#9733;</button>
+                  <button type="button" class="form-star-btn active" data-val="2">&#9733;</button>
+                  <button type="button" class="form-star-btn active" data-val="3">&#9733;</button>
+                  <button type="button" class="form-star-btn active" data-val="4">&#9733;</button>
+                  <button type="button" class="form-star-btn active" data-val="5">&#9733;</button>
+                </div>
+                <input type="hidden" id="addRevRating" value="5" />
+              </div>
+
+              <div class="form-group">
+                <label for="addRevMessage" class="form-label">Message *</label>
+                <textarea id="addRevMessage" class="form-textarea" placeholder="Write the testimonial message..." rows="4" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Client Photo (Optional)</label>
+                <div class="file-box">
+                  <input type="file" id="addRevPhoto" accept="image/*" />
+                  <span style="font-size:0.85rem;color:var(--plum);font-weight:500;">Click to upload reviewer photo</span>
+                  <div class="file-preview-name" id="addRevPhotoName"></div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-admin-submit" id="submitAddReviewBtn">Add Approved Review</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 4: ADD PHOTO -->
+        <section id="tabAddPhoto" class="tab-pane" style="display:none;">
+          <div class="admin-form-container">
+            <form id="addPhotoForm" novalidate>
+              
+              <div class="form-group">
+                <label class="form-label">Select Image *</label>
+                <div class="file-box">
+                  <input type="file" id="addPhotoFile" accept="image/*" required />
+                  <span style="font-size:0.85rem;color:var(--plum);font-weight:500;">Click or drag an image here</span>
+                  <div class="file-preview-name" id="addPhotoFileName"></div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="addPhotoCategory" class="form-label">Category *</label>
+                <input type="text" id="addPhotoCategory" class="form-input" placeholder="e.g. Wedding, Birthday, Corporate" required />
+              </div>
+
+              <div class="form-group">
+                <label for="addPhotoCaption" class="form-label">Caption (Optional)</label>
+                <input type="text" id="addPhotoCaption" class="form-input" placeholder="e.g. Whispers of Romance under the stars" />
+              </div>
+
+              <button type="submit" class="btn-admin-submit" id="submitAddPhotoBtn">Upload Photo</button>
+            </form>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    /* ---- Supabase Configuration & Client ---- */
+    const SUPABASE_URL = 'https://nlrkdzbuysgdagycslhc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_n3VHFxI3TyrQYleFJf_-rA_2Yy1X7M0';
+    var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+    /* ---- Local Storage Keys for Persistent Sync ---- */
+    const LOCAL_PENDING_KEY = 'yilo_admin_pending_reviews';
+    const LOCAL_GALLERY_KEY = 'yilo_admin_local_gallery';
+
+    /* ---- Initial Seed Pending Reviews (for preview & approval) ---- */
+    const SEED_PENDING_REVIEWS = [
+      {
+        id: 'seed-p1',
+        name: 'Sarah & David Mutua',
+        event_type: 'Wedding',
+        rating: 5,
+        message: 'Victoria and her team turned our garden wedding into a fairytale. The attention to detail and calm composure throughout was unparalleled.',
+        photo_url: null,
+        status: 'pending',
+        created_at: new Date(Date.now() - 3600000 * 5).toISOString()
+      },
+      {
+        id: 'seed-p2',
+        name: 'James K. Kariuki',
+        event_type: 'Corporate Event',
+        rating: 5,
+        message: 'Flawless execution of our annual executive dinner. Our international partners were genuinely impressed by the sophistication.',
+        photo_url: null,
+        status: 'pending',
+        created_at: new Date(Date.now() - 3600000 * 24).toISOString()
+      }
+    ];
+
+    /* ---- State ---- */
+    let pendingReviews = [];
+    let approvedReviews = [];
+    let galleryPhotos = [];
+    let currentTab = 'tabReviews';
+    let currentReviewSubTab = 'pending';
+
+    /* ---- Toast Notification Helper ---- */
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      const icon = type === 'success'
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A24B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
+    }
+
+    /* ---- Authentication Elements ---- */
+    const loginScreen = document.getElementById('loginScreen');
+    const dashboardShell = document.getElementById('dashboardShell');
+    const loginCard = document.getElementById('loginCard');
+    const forgotCard = document.getElementById('forgotCard');
+    const loginForm = document.getElementById('loginForm');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const loginBtn = document.getElementById('loginBtn');
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const backToLoginLink = document.getElementById('backToLoginLink');
+    const forgotForm = document.getElementById('forgotForm');
+    const forgotEmail = document.getElementById('forgotEmail');
+    const forgotError = document.getElementById('forgotError');
+    const forgotSuccess = document.getElementById('forgotSuccess');
+    const forgotBtn = document.getElementById('forgotBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    /* ---- Check Session on Load ---- */
+    async function checkSession() {
+      if (!supabase) {
+        console.warn('Supabase client not initialized');
+        return;
+      }
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (session) {
+          loginScreen.classList.add('hidden');
+          dashboardShell.classList.add('active');
+          initDashboard();
+        } else {
+          loginScreen.classList.remove('hidden');
+          dashboardShell.classList.remove('active');
+          loginCard.style.display = 'block';
+          forgotCard.style.display = 'none';
+        }
+      } catch (err) {
+        console.warn('Session check failed:', err);
+        loginScreen.classList.remove('hidden');
+        dashboardShell.classList.remove('active');
+      }
+    }
+
+    /* ---- Login with Supabase Auth ---- */
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = loginEmail.value.trim();
+      const password = loginPassword.value;
+
+      loginError.classList.remove('visible');
+      loginError.textContent = '';
+
+      if (!email || !password) {
+        loginError.textContent = 'Please enter both email and password.';
+        loginError.classList.add('visible');
+        return;
+      }
+
+      if (!supabase) {
+        loginError.textContent = 'Authentication service is unavailable.';
+        loginError.classList.add('visible');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          loginError.textContent = error.message || 'Invalid login credentials.';
+          loginError.classList.add('visible');
+          return;
+        }
+
+        // On success: hide login, show dashboard
+        loginScreen.classList.add('hidden');
+        dashboardShell.classList.add('active');
+        initDashboard();
+        showToast('Welcome to Yilo Admin');
+      } catch (err) {
+        loginError.textContent = err.message || 'An unexpected error occurred.';
+        loginError.classList.add('visible');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+
+    /* ---- Forgot Password Handling ---- */
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginCard.style.display = 'none';
+      forgotCard.style.display = 'block';
+      forgotError.classList.remove('visible');
+      forgotError.textContent = '';
+      forgotSuccess.classList.remove('visible');
+      forgotEmail.value = loginEmail.value.trim();
+      forgotEmail.focus();
+    });
+
+    backToLoginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotCard.style.display = 'none';
+      loginCard.style.display = 'block';
+      loginError.classList.remove('visible');
+      loginError.textContent = '';
+      loginEmail.focus();
+    });
+
+    forgotForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = forgotEmail.value.trim();
+
+      forgotError.classList.remove('visible');
+      forgotError.textContent = '';
+      forgotSuccess.classList.remove('visible');
+
+      if (!email) {
+        forgotError.textContent = 'Please enter your email address.';
+        forgotError.classList.add('visible');
+        return;
+      }
+
+      if (!supabase) {
+        forgotError.textContent = 'Authentication service is unavailable.';
+        forgotError.classList.add('visible');
+        return;
+      }
+
+      forgotBtn.disabled = true;
+      forgotBtn.textContent = 'Sending...';
+
+      try {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+        if (error) {
+          forgotError.textContent = error.message || 'Failed to send reset link.';
+          forgotError.classList.add('visible');
+        } else {
+          forgotSuccess.textContent = 'Check your email for a reset link';
+          forgotSuccess.classList.add('visible');
+          forgotEmail.value = '';
+        }
+      } catch (err) {
+        forgotError.textContent = err.message || 'An unexpected error occurred.';
+        forgotError.classList.add('visible');
+      } finally {
+        forgotBtn.disabled = false;
+        forgotBtn.textContent = 'Send Reset Link';
+      }
+    });
+
+    /* ---- Logout Handler ---- */
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        if (supabase) {
+          await supabase.auth.signOut();
+        }
+      } catch (err) {
+        console.warn('Sign out error:', err);
+      }
+      window.location.reload();
+    });
+
+    /* ---- Dashboard Navigation ---- */
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    const currentTabTitle = document.getElementById('currentTabTitle');
+    const tabTitles = {
+      tabReviews: 'Reviews Management',
+      tabGallery: 'Gallery Management',
+      tabAddReview: 'Add Review',
+      tabAddPhoto: 'Upload Gallery Photo'
+    };
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const targetTab = btn.getAttribute('data-tab');
+        currentTab = targetTab;
+        
+        tabPanes.forEach(pane => pane.style.display = 'none');
+        document.getElementById(targetTab).style.display = 'block';
+        currentTabTitle.textContent = tabTitles[targetTab] || 'Dashboard';
+
+        if (targetTab === 'tabGallery') fetchGalleryData();
+        if (targetTab === 'tabReviews') fetchReviewsData();
+      });
+    });
+
+    /* ---- Sub-tabs inside Reviews (Pending vs Approved) ---- */
+    const subTabPending = document.getElementById('subTabPending');
+    const subTabApproved = document.getElementById('subTabApproved');
+    const pendingReviewsContainer = document.getElementById('pendingReviewsContainer');
+    const approvedReviewsContainer = document.getElementById('approvedReviewsContainer');
+
+    subTabPending.addEventListener('click', () => {
+      subTabPending.classList.add('active');
+      subTabApproved.classList.remove('active');
+      pendingReviewsContainer.style.display = 'block';
+      approvedReviewsContainer.style.display = 'none';
+      currentReviewSubTab = 'pending';
+    });
+
+    subTabApproved.addEventListener('click', () => {
+      subTabApproved.classList.add('active');
+      subTabPending.classList.remove('active');
+      pendingReviewsContainer.style.display = 'none';
+      approvedReviewsContainer.style.display = 'block';
+      currentReviewSubTab = 'approved';
+    });
+
+    /* ---- Data Initialization ---- */
+    function initDashboard() {
+      // Initialize pending local reviews if empty
+      const storedPending = localStorage.getItem(LOCAL_PENDING_KEY);
+      if (!storedPending) {
+        localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(SEED_PENDING_REVIEWS));
+      }
+      fetchReviewsData();
+    }
+
+    document.getElementById('refreshDataBtn').addEventListener('click', () => {
+      if (currentTab === 'tabReviews') fetchReviewsData();
+      else if (currentTab === 'tabGallery') fetchGalleryData();
+      showToast('Data refreshed');
+    });
+
+    /* ---- Fetch & Render Reviews ---- */
+    async function fetchReviewsData() {
+      document.getElementById('pendingReviewsSpinner').style.display = 'block';
+      document.getElementById('approvedReviewsSpinner').style.display = 'block';
+
+      // Load pending from local queue + Supabase (if accessible)
+      let localPending = [];
+      try {
+        localPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+      } catch (_) { localPending = []; }
+
+      // Fetch approved from Supabase
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews?status=eq.approved&select=*&order=created_at.desc`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        if (res.ok) {
+          approvedReviews = await res.json();
+        } else {
+          approvedReviews = [];
+        }
+      } catch (err) {
+        console.warn('Error fetching approved reviews from Supabase:', err);
+      }
+
+      pendingReviews = localPending.filter(r => r.status === 'pending');
+
+      document.getElementById('pendingReviewsSpinner').style.display = 'none';
+      document.getElementById('approvedReviewsSpinner').style.display = 'none';
+
+      renderPendingReviews();
+      renderApprovedReviews();
+      updateBadges();
+    }
+
+    function updateBadges() {
+      const pCount = pendingReviews.length;
+      const aCount = approvedReviews.length;
+      document.getElementById('sidebarPendingBadge').textContent = pCount;
+      document.getElementById('subTabPendingBadge').textContent = pCount;
+      document.getElementById('subTabApprovedBadge').textContent = aCount;
+    }
+
+    function renderPendingReviews() {
+      const container = document.getElementById('pendingReviewsList');
+      container.innerHTML = '';
+
+      if (pendingReviews.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3 class="empty-state-title">No Pending Reviews</h3>
+            <p class="empty-state-sub">New submissions will appear here for your moderation.</p>
+          </div>
+        `;
+        return;
+      }
+
+      pendingReviews.forEach(rev => {
+        const card = document.createElement('div');
+        card.className = 'admin-review-card';
+        
+        const starsStr = '★'.repeat(rev.rating || 5) + '☆'.repeat(5 - (rev.rating || 5));
+        const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+
+        const photoHtml = rev.photo_url
+          ? `<img src="${rev.photo_url}" alt="${rev.name}" class="review-thumb" onclick="window.open('${rev.photo_url}','_blank')" title="Click to view full photo" />`
+          : '';
+
+        card.innerHTML = `
+          <div class="review-top-row">
+            <span class="reviewer-name">${escapeHtml(rev.name)}</span>
+            <div class="review-meta-badge">
+              <span class="event-type-badge">${escapeHtml(rev.event_type || 'Event')}</span>
+              <span class="review-stars">${starsStr}</span>
+            </div>
+          </div>
+          <div class="review-body-row">
+            ${photoHtml}
+            <p class="review-message">&ldquo;${escapeHtml(rev.message)}&rdquo;</p>
+          </div>
+          <div class="review-bottom-row">
+            <span>Submitted: ${formattedDate}</span>
+            <div class="card-actions">
+              <button class="btn-action-approve" onclick="approveReview('${rev.id}')">Approve</button>
+              <button class="btn-action-reject" onclick="rejectReview('${rev.id}')">Reject</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderApprovedReviews() {
+      const container = document.getElementById('approvedReviewsList');
+      container.innerHTML = '';
+
+      if (approvedReviews.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3 class="empty-state-title">No Approved Reviews</h3>
+            <p class="empty-state-sub">Approved reviews displayed on the public site will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      approvedReviews.forEach(rev => {
+        const card = document.createElement('div');
+        card.className = 'admin-review-card';
+
+        const starsStr = '★'.repeat(rev.rating || 5) + '☆'.repeat(5 - (rev.rating || 5));
+        const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+
+        const photoHtml = rev.photo_url
+          ? `<img src="${rev.photo_url}" alt="${rev.name}" class="review-thumb" onclick="window.open('${rev.photo_url}','_blank')" />`
+          : '';
+
+        card.innerHTML = `
+          <div class="review-top-row">
+            <span class="reviewer-name">${escapeHtml(rev.name)}</span>
+            <div class="review-meta-badge">
+              <span class="event-type-badge">${escapeHtml(rev.event_type || 'Event')}</span>
+              <span class="review-stars">${starsStr}</span>
+            </div>
+          </div>
+          <div class="review-body-row">
+            ${photoHtml}
+            <p class="review-message">&ldquo;${escapeHtml(rev.message)}&rdquo;</p>
+          </div>
+          <div class="review-bottom-row">
+            <span>Submitted: ${formattedDate}</span>
+            <div class="card-actions">
+              <button class="btn-action-remove" onclick="moveReviewBackToPending('${rev.id}')">Remove to Pending</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ---- Review Action Handlers ---- */
+    window.approveReview = async function(id) {
+      const target = pendingReviews.find(r => r.id === id);
+      if (!target) return;
+
+      // 1. Insert/Update into Supabase as approved
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: target.name,
+            event_type: target.event_type,
+            rating: target.rating,
+            message: target.message,
+            photo_url: target.photo_url,
+            status: 'approved'
+          })
+        });
+      } catch (err) {
+        console.warn('Supabase approve error:', err);
+      }
+
+      // 2. Remove from pending
+      let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+      storedPending = storedPending.filter(r => r.id !== id);
+      localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+
+      showToast(`Approved review from ${target.name}!`);
+      fetchReviewsData();
+    };
+
+    window.rejectReview = async function(id) {
+      const target = pendingReviews.find(r => r.id === id);
+      if (!target) return;
+
+      let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+      storedPending = storedPending.filter(r => r.id !== id);
+      localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+
+      showToast(`Rejected review from ${target.name}`, 'error');
+      fetchReviewsData();
+    };
+
+    window.moveReviewBackToPending = async function(id) {
+      const target = approvedReviews.find(r => r.id === id);
+      if (!target) return;
+
+      // 1. Update in Supabase to pending (or remove)
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/reviews?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: 'pending' })
+        });
+      } catch (err) {
+        console.warn('Supabase patch status error:', err);
+      }
+
+      // 2. Add to local pending
+      let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+      target.status = 'pending';
+      storedPending.push(target);
+      localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+
+      showToast(`Moved review from ${target.name} back to pending.`);
+      fetchReviewsData();
+    };
+
+    /* ---- TAB 2: GALLERY FETCH & RENDER ---- */
+    async function fetchGalleryData() {
+      const spinner = document.getElementById('gallerySpinner');
+      spinner.style.display = 'block';
+
+      let supabasePhotos = [];
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/gallery?select=*&order=created_at.desc`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        if (res.ok) {
+          supabasePhotos = await res.json();
+        }
+      } catch (err) {
+        console.warn('Error fetching gallery from Supabase:', err);
+      }
+
+      let localPhotos = [];
+      try {
+        localPhotos = JSON.parse(localStorage.getItem(LOCAL_GALLERY_KEY) || '[]');
+      } catch (_) { localPhotos = []; }
+
+      // Merge unique
+      const allIds = new Set(supabasePhotos.map(p => p.id));
+      galleryPhotos = [...supabasePhotos, ...localPhotos.filter(p => !allIds.has(p.id))];
+
+      spinner.style.display = 'none';
+      renderGalleryGrid();
+    }
+
+    function renderGalleryGrid() {
+      const grid = document.getElementById('adminGalleryGrid');
+      grid.innerHTML = '';
+
+      if (galleryPhotos.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <h3 class="empty-state-title">No Photos Yet</h3>
+            <p class="empty-state-sub">Use the "Add Photo" tab to upload images to the public gallery.</p>
+          </div>
+        `;
+        return;
+      }
+
+      galleryPhotos.forEach(photo => {
+        const card = document.createElement('div');
+        card.className = 'admin-gallery-card';
+        card.innerHTML = `
+          <img src="${photo.image_url}" alt="${photo.caption || photo.category}" class="admin-gallery-thumb" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 75\'><rect width=\'100\' height=\'75\' fill=\'%233B0F2F\'/><text x=\'50%\' y=\'50%\' text-anchor=\'middle\' fill=\'%23C9A24B\' font-size=\'10\'>Yilo Moment</text></svg>'" />
+          <div class="admin-gallery-info">
+            <span class="admin-gallery-cat">${escapeHtml(photo.category || 'Gallery')}</span>
+            <p class="admin-gallery-caption">${escapeHtml(photo.caption || 'Every event has a story.')}</p>
+            <button class="btn-delete-photo" onclick="deleteGalleryPhoto('${photo.id}')">Delete</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    window.deleteGalleryPhoto = async function(id) {
+      if (!confirm('Are you sure you want to delete this photo from the gallery?')) return;
+
+      // 1. Delete from Supabase
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/gallery?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+      } catch (err) {
+        console.warn('Supabase delete error:', err);
+      }
+
+      // 2. Delete from local collection
+      let localPhotos = JSON.parse(localStorage.getItem(LOCAL_GALLERY_KEY) || '[]');
+      localPhotos = localPhotos.filter(p => p.id !== id);
+      localStorage.setItem(LOCAL_GALLERY_KEY, JSON.stringify(localPhotos));
+
+      galleryPhotos = galleryPhotos.filter(p => p.id !== id);
+      showToast('Photo deleted from gallery.', 'error');
+      renderGalleryGrid();
+    };
+
+    /* ---- TAB 3: ADD REVIEW FORM ---- */
+    const adminStarWrap = document.getElementById('adminStarWrap');
+    const adminStarBtns = document.querySelectorAll('.form-star-btn');
+    const addRevRatingInput = document.getElementById('addRevRating');
+
+    adminStarBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.getAttribute('data-val'), 10);
+        addRevRatingInput.value = val;
+        adminStarBtns.forEach(b => {
+          const bVal = parseInt(b.getAttribute('data-val'), 10);
+          b.classList.toggle('active', bVal <= val);
+        });
+      });
+    });
+
+    const addRevPhoto = document.getElementById('addRevPhoto');
+    const addRevPhotoName = document.getElementById('addRevPhotoName');
+    addRevPhoto.addEventListener('change', () => {
+      if (addRevPhoto.files && addRevPhoto.files[0]) {
+        addRevPhotoName.textContent = `Selected: ${addRevPhoto.files[0].name}`;
+      } else {
+        addRevPhotoName.textContent = '';
+      }
+    });
+
+    document.getElementById('addReviewForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitAddReviewBtn');
+      const name = document.getElementById('addRevName').value.trim();
+      const eventType = document.getElementById('addRevEvent').value;
+      const rating = parseInt(addRevRatingInput.value, 10) || 5;
+      const message = document.getElementById('addRevMessage').value.trim();
+
+      if (!name || !eventType || !message) {
+        showToast('Please fill in all required fields.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      let photo_url = null;
+      if (addRevPhoto.files && addRevPhoto.files[0]) {
+        photo_url = await uploadFileToStorage(addRevPhoto.files[0], 'review-photos');
+      }
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name,
+            event_type: eventType,
+            rating,
+            message,
+            photo_url,
+            status: 'approved'
+          })
+        });
+
+        if (res.ok || res.status === 201) {
+          showToast('Review added and approved!');
+          document.getElementById('addReviewForm').reset();
+          addRevPhotoName.textContent = '';
+          // Switch to approved reviews tab
+          document.querySelector('button[data-tab="tabReviews"]').click();
+          subTabApproved.click();
+        } else {
+          throw new Error('Could not insert review.');
+        }
+      } catch (err) {
+        showToast(err.message || 'Error inserting review.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Approved Review';
+      }
+    });
+
+    /* ---- TAB 4: ADD PHOTO FORM ---- */
+    const addPhotoFile = document.getElementById('addPhotoFile');
+    const addPhotoFileName = document.getElementById('addPhotoFileName');
+    addPhotoFile.addEventListener('change', () => {
+      if (addPhotoFile.files && addPhotoFile.files[0]) {
+        addPhotoFileName.textContent = `Selected: ${addPhotoFile.files[0].name}`;
+      } else {
+        addPhotoFileName.textContent = '';
+      }
+    });
+
+    document.getElementById('addPhotoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitAddPhotoBtn');
+      const category = document.getElementById('addPhotoCategory').value.trim();
+      const caption = document.getElementById('addPhotoCaption').value.trim();
+
+      if (!addPhotoFile.files || !addPhotoFile.files[0]) {
+        showToast('Please choose an image file to upload.', 'error');
+        return;
+      }
+      if (!category) {
+        showToast('Please specify an event category.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading...';
+
+      const file = addPhotoFile.files[0];
+      const imageUrl = await uploadFileToStorage(file, 'gallery-photos');
+
+      // Create photo record
+      const newPhoto = {
+        id: 'gal_' + Date.now(),
+        image_url: imageUrl,
+        category: category,
+        caption: caption || 'Every event has a story',
+        created_at: new Date().toISOString()
+      };
+
+      // Try inserting into Supabase gallery table
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/gallery`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            category: category,
+            caption: caption || 'Every event has a story'
+          })
+        });
+      } catch (err) {
+        console.warn('Supabase gallery insert note:', err);
+      }
+
+      // Also persist locally for instantaneous admin & site view
+      let localPhotos = JSON.parse(localStorage.getItem(LOCAL_GALLERY_KEY) || '[]');
+      localPhotos.unshift(newPhoto);
+      localStorage.setItem(LOCAL_GALLERY_KEY, JSON.stringify(localPhotos));
+
+      showToast('Photo added successfully!');
+      document.getElementById('addPhotoForm').reset();
+      addPhotoFileName.textContent = '';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Upload Photo';
+
+      // Switch to Gallery tab
+      document.querySelector('button[data-tab="tabGallery"]').click();
+    });
+
+    /* ---- Storage Upload Helper ---- */
+    async function uploadFileToStorage(file, bucketName = 'gallery-photos') {
+      const cleanExt = file.name.split('.').pop().toLowerCase() || 'jpg';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${cleanExt}`;
+
+      // Try creating bucket if it doesn't exist
+      try {
+        await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: bucketName, name: bucketName, public: true })
+        });
+      } catch (_) {}
+
+      // Try uploading to bucket
+      try {
+        const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucketName}/${fileName}`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': file.type || 'image/jpeg'
+          },
+          body: file
+        });
+        if (uploadRes.ok) {
+          return `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${fileName}`;
+        }
+      } catch (err) {
+        console.warn(`Storage upload to ${bucketName} failed:`, err);
+      }
+
+      // Fallback to Data URL if storage bucket is restricted
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Run auth check on load
+    checkSession();
+  </script>
+</body>
+</html>
