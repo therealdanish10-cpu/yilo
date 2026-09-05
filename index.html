@@ -69,7 +69,7 @@
       flex-shrink: 0;
     }
     .nav-logo img {
-      height: 48px;
+      height: 70px;
       width: auto;
       object-fit: contain;
       display: block;
@@ -1018,10 +1018,10 @@
     }
     .ft-desc {
       font-family: 'Montserrat', sans-serif;
-      font-size: 14px;
-      line-height: 1.8;
+      font-size: 15px;
+      line-height: 1.9;
       color: rgba(247,243,236,.6);
-      margin-top: 16px;
+      margin-top: 20px;
       max-width: 280px;
     }
 
@@ -1204,7 +1204,7 @@
   <!-- NAVBAR -->
   <header id="navbar" role="banner">
     <a href="index.html" class="nav-logo" aria-label="Yilo by Achieng Home">
-      <img src="images/logos/logo1.svg" alt="Yilo by Achieng Logo" loading="eager" style="height: 48px; width: auto; object-fit: contain; filter: brightness(10);" />
+      <img id="navLogo" src="images/logos/logo3.svg" alt="Yilo by Achieng Logo" loading="eager" style="height: 70px; width: auto; object-fit: contain; filter: brightness(0) invert(1);" />
     </a>
     <nav class="nav-links" aria-label="Primary">
       <a href="#hero">Home</a>
@@ -1227,7 +1227,7 @@
     <div class="hero-content">
 
       <!-- Hero Logo (logo3.svg) -->
-      <img src="images/logos/logo3.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 220px; max-width: 80vw; height: auto; object-fit: contain; filter: brightness(10); display: block; margin: 0 auto 0.5rem;" />
+      <img src="images/logos/logo3.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 280px; max-width: 80vw; height: auto; object-fit: contain; filter: brightness(0) invert(1); display: block; margin: 0 auto 0.5rem;" />
 
       <h1 class="hero-brand">Yilo by Achieng</h1>
       <p class="hero-sub">Events &amp; Experiences</p>
@@ -1291,7 +1291,7 @@
       <div class="victoria-grid">
         <div class="photo-placeholder fade-up">Photo Coming Soon</div>
         <div class="victoria-text fade-up delay-2">
-          <img src="images/logos/logo2.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 180px; max-width: 100%; height: auto; object-fit: contain; margin-bottom: 1.25rem; display: block;" />
+          <img src="images/logos/logo2.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 220px; max-width: 100%; height: auto; object-fit: contain; margin-bottom: 1.25rem; display: block; filter: brightness(0) saturate(100%) invert(68%) sepia(55%) saturate(500%) hue-rotate(5deg) brightness(95%);" />
           <h2 id="victoria-heading">Meet Victoria Achieng</h2>
           <span class="script">The person behind Yilo.</span>
           <p>With a background in organisation, communication and stakeholder coordination, Victoria brings structure, warmth and efficiency to every event. From intimate gatherings to corporate experiences, Yilo takes care of everything behind the scenes &mdash; so you can be fully present for the moments that matter.</p>
@@ -1678,7 +1678,7 @@
 
       <!-- Col 1: Brand -->
       <div>
-        <img src="images/logos/logo1.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 200px; max-width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1.25rem;" />
+        <img src="images/logos/logo1.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 220px; max-width: 100%; height: auto; object-fit: contain; display: block; filter: brightness(0) invert(1);" />
         <p class="ft-desc">From intimate gatherings to corporate experiences, Yilo takes care of everything behind the scenes &mdash; so you can be fully present for the moments that matter.</p>
       </div>
 
@@ -1769,9 +1769,22 @@
   <script>
     /* ---- Navbar scroll ---- */
     const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-      navbar.classList.toggle('scrolled', window.scrollY > 60);
-    }, { passive: true });
+    const navLogo = document.getElementById('navLogo');
+    function updateNavbarScroll() {
+      const isScrolled = window.scrollY > 60;
+      if (navbar) navbar.classList.toggle('scrolled', isScrolled);
+      if (navLogo) {
+        if (isScrolled) {
+          if (!navLogo.src.endsWith('logo1.svg')) navLogo.src = 'images/logos/logo1.svg';
+          navLogo.style.filter = 'none';
+        } else {
+          if (!navLogo.src.endsWith('logo3.svg')) navLogo.src = 'images/logos/logo3.svg';
+          navLogo.style.filter = 'brightness(0) invert(1)';
+        }
+      }
+    }
+    window.addEventListener('scroll', updateNavbarScroll, { passive: true });
+    updateNavbarScroll();
 
     /* ---- Mobile nav ---- */
     const hamburger = document.getElementById('hamburger');
