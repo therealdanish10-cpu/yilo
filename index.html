@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yilo by Achieng &mdash; Events &amp; Experiences</title>
   <meta name="description" content="Yilo by Achieng &mdash; Luxury Events &amp; Experiences in Kenya. Curating Moments. Creating Memories." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%233B0F2F'/><text y='.9em' font-size='80' font-family='serif' fill='%23C9A24B' x='15'>Y</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="images/logos/monogram.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet" />
@@ -63,8 +63,17 @@
     }
     #navbar.scrolled { background: var(--plum); padding: .9rem 2.5rem; }
     .nav-logo {
-      font-family: 'Playfair Display', serif; font-weight: 700;
-      font-size: 2rem; color: var(--gold); letter-spacing: .04em; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo img {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      transition: opacity .3s ease;
     }
     .nav-links {
       display: flex; gap: 2.5rem;
@@ -77,10 +86,34 @@
     }
     .nav-links a:hover { color: var(--gold); }
     .nav-hamburger {
-      display: none; flex-direction: column; gap: 5px;
-      cursor: pointer; background: none; border: none; padding: 4px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      padding: 0;
+      position: relative;
+      z-index: 1001;
     }
-    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--ivory); transition: all .3s; }
+    .nav-hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--ivory);
+      border-radius: 2px;
+      transition: transform .35s ease, opacity .25s ease, background-color .3s ease;
+      position: absolute;
+    }
+    .nav-hamburger span:nth-child(1) { transform: translateY(-7px); }
+    .nav-hamburger span:nth-child(2) { transform: translateY(0); }
+    .nav-hamburger span:nth-child(3) { transform: translateY(7px); }
+    .nav-hamburger.active span:nth-child(1) { transform: translateY(0) rotate(45deg); background: var(--gold); }
+    .nav-hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.active span:nth-child(3) { transform: translateY(0) rotate(-45deg); background: var(--gold); }
 
     /* Mobile nav */
     .mobile-nav {
@@ -94,10 +127,6 @@
       letter-spacing: .15em; text-transform: uppercase; color: var(--ivory); transition: color .3s;
     }
     .mobile-nav a:hover { color: var(--gold); }
-    .mobile-nav-close {
-      position: absolute; top: 1.5rem; right: 2rem;
-      font-size: 2rem; color: var(--ivory); cursor: pointer; background: none; border: none;
-    }
 
     /* ====== HERO ====== */
     #hero {
@@ -1164,18 +1193,19 @@
 <body>
 
   <!-- MOBILE NAV -->
-  <nav class="mobile-nav" id="mobileNav">
-    <button class="mobile-nav-close" id="mobileClose" aria-label="Close menu">&times;</button>
-    <a href="#hero" onclick="closeMobileNav()">Home</a>
-    <a href="#why" onclick="closeMobileNav()">About</a>
-    <a href="#events" onclick="closeMobileNav()">Services</a>
-    <a href="gallery.html" onclick="closeMobileNav()">Gallery</a>
-    <a href="#contact" onclick="closeMobileNav()">Contact</a>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <a href="#hero">Home</a>
+    <a href="#why">About</a>
+    <a href="#events">Services</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="#contact">Contact</a>
   </nav>
 
   <!-- NAVBAR -->
   <header id="navbar" role="banner">
-    <a href="index.html" onclick="window.location.reload()" class="nav-logo">YILO</a>
+    <a href="index.html" class="nav-logo" aria-label="Yilo by Achieng Home">
+      <img src="images/logos/logo1.svg" alt="Yilo by Achieng Logo" loading="eager" style="height: 48px; width: auto; object-fit: contain; filter: brightness(10);" />
+    </a>
     <nav class="nav-links" aria-label="Primary">
       <a href="#hero">Home</a>
       <a href="#why">About</a>
@@ -1183,7 +1213,7 @@
       <a href="gallery.html">Gallery</a>
       <a href="#contact">Contact</a>
     </nav>
-    <button class="nav-hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+    <button class="nav-hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </header>
@@ -1196,22 +1226,8 @@
     <div class="hero-overlay" aria-hidden="true"></div>
     <div class="hero-content">
 
-      <!-- Botanical SVG ornament -->
-      <div aria-hidden="true">
-        <svg viewBox="0 0 150 75" width="130" height="65" fill="none" stroke="#C9A24B" stroke-width="1.2" stroke-linecap="round">
-          <circle cx="75" cy="37" r="5.5"/>
-          <!-- left branches -->
-          <path d="M69,37 Q54,26 38,24"/><path d="M38,24 Q35,16 39,11"/><path d="M38,24 Q30,27 28,34"/>
-          <path d="M50,27 Q46,17 48,11"/><path d="M50,27 Q42,22 39,15"/>
-          <path d="M56,32 Q44,26 36,28"/>
-          <!-- right branches (mirror) -->
-          <path d="M81,37 Q96,26 112,24"/><path d="M112,24 Q115,16 111,11"/><path d="M112,24 Q120,27 122,34"/>
-          <path d="M100,27 Q104,17 102,11"/><path d="M100,27 Q108,22 111,15"/>
-          <path d="M94,32 Q106,26 114,28"/>
-          <!-- bottom stem -->
-          <path d="M75,43 Q73,55 69,60"/><path d="M75,43 Q77,55 81,60"/>
-        </svg>
-      </div>
+      <!-- Hero Logo (logo3.svg) -->
+      <img src="images/logos/logo3.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 220px; max-width: 80vw; height: auto; object-fit: contain; filter: brightness(10); display: block; margin: 0 auto 0.5rem;" />
 
       <h1 class="hero-brand">Yilo by Achieng</h1>
       <p class="hero-sub">Events &amp; Experiences</p>
@@ -1275,6 +1291,7 @@
       <div class="victoria-grid">
         <div class="photo-placeholder fade-up">Photo Coming Soon</div>
         <div class="victoria-text fade-up delay-2">
+          <img src="images/logos/logo2.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 180px; max-width: 100%; height: auto; object-fit: contain; margin-bottom: 1.25rem; display: block;" />
           <h2 id="victoria-heading">Meet Victoria Achieng</h2>
           <span class="script">The person behind Yilo.</span>
           <p>With a background in organisation, communication and stakeholder coordination, Victoria brings structure, warmth and efficiency to every event. From intimate gatherings to corporate experiences, Yilo takes care of everything behind the scenes &mdash; so you can be fully present for the moments that matter.</p>
@@ -1661,11 +1678,7 @@
 
       <!-- Col 1: Brand -->
       <div>
-        <div class="ft-brand-logo">
-          <span class="ft-yilo">YILO</span>
-          <span class="ft-by">by Achieng</span>
-        </div>
-        <span class="ft-tagline">Curating Moments. Creating Memories.</span>
+        <img src="images/logos/logo1.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 200px; max-width: 100%; height: auto; object-fit: contain; display: block; margin-bottom: 1.25rem;" />
         <p class="ft-desc">From intimate gatherings to corporate experiences, Yilo takes care of everything behind the scenes &mdash; so you can be fully present for the moments that matter.</p>
       </div>
 
@@ -1761,12 +1774,56 @@
     }, { passive: true });
 
     /* ---- Mobile nav ---- */
-    const hamburger  = document.getElementById('hamburger');
-    const mobileNav  = document.getElementById('mobileNav');
-    const mobileClose = document.getElementById('mobileClose');
-    hamburger.addEventListener('click', () => { mobileNav.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); });
-    mobileClose.addEventListener('click', closeMobileNav);
-    function closeMobileNav() { mobileNav.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); }
+    const hamburger = document.getElementById('hamburger');
+    const mobileNav = document.getElementById('mobileNav');
+
+    function toggleMobileNav() {
+      if (!mobileNav) return;
+      if (mobileNav.classList.contains('open')) {
+        closeMobileNav();
+      } else {
+        openMobileNav();
+      }
+    }
+
+    function openMobileNav() {
+      if (mobileNav) mobileNav.classList.add('open');
+      if (hamburger) {
+        hamburger.classList.add('active');
+        hamburger.setAttribute('aria-expanded', 'true');
+        hamburger.setAttribute('aria-label', 'Close navigation menu');
+      }
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileNav() {
+      if (mobileNav) mobileNav.classList.remove('open');
+      if (hamburger) {
+        hamburger.classList.remove('active');
+        hamburger.setAttribute('aria-expanded', 'false');
+        hamburger.setAttribute('aria-label', 'Open navigation menu');
+      }
+      document.body.style.overflow = '';
+    }
+
+    if (hamburger) {
+      hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMobileNav();
+      });
+    }
+
+    if (mobileNav) {
+      mobileNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', closeMobileNav);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileNav && mobileNav.classList.contains('open')) {
+        closeMobileNav();
+      }
+    });
 
     /* ---- Hero video parallax ---- */
     const heroVideo = document.getElementById('hero-video');
