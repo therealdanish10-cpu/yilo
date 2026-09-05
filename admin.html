@@ -1418,18 +1418,66 @@
       showToast('Data refreshed');
     });
 
+    /* ---- Supabase Review Status Updater ---- */
+    async function updateReviewStatusInSupabase(reviewId, newStatus) {
+      if (!reviewId) return false;
+      let success = false;
+
+      // 1. Try with Supabase JS client filtered strictly by id
+      if (supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('reviews')
+            .update({ status: newStatus })
+            .eq('id', reviewId);
+          if (!error) {
+            console.log(`Updated review ${reviewId} status to '${newStatus}' via supabase-js`);
+            success = true;
+          } else {
+            console.warn('supabase-js update error:', error);
+          }
+        } catch (err) {
+          console.warn('supabase-js update exception:', err);
+        }
+      }
+
+      // 2. Fallback direct REST PATCH with session bearer token
+      try {
+        let authHeader = `Bearer ${SUPABASE_KEY}`;
+        try {
+          const sess = (await supabase?.auth.getSession())?.data?.session;
+          if (sess?.access_token) {
+            authHeader = `Bearer ${sess.access_token}`;
+          }
+        } catch (_) {}
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews?id=eq.${encodeURIComponent(reviewId)}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': authHeader,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          console.log(`Updated review ${reviewId} status to '${newStatus}' via REST`);
+          success = true;
+        }
+      } catch (err) {
+        console.warn('REST review status update error:', err);
+      }
+
+      return success;
+    }
+
     /* ---- Fetch & Render Reviews ---- */
     async function fetchReviewsData() {
       document.getElementById('pendingReviewsSpinner').style.display = 'block';
       document.getElementById('approvedReviewsSpinner').style.display = 'block';
 
-      // Load pending from local queue + Supabase (if accessible)
-      let localPending = [];
-      try {
-        localPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
-      } catch (_) { localPending = []; }
-
-      // Fetch approved from Supabase
+      // 1. Fetch approved reviews from Supabase
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews?status=eq.approved&select=*&order=created_at.desc`, {
           headers: {
@@ -1438,7 +1486,10 @@
           }
         });
         if (res.ok) {
-          approvedReviews = await res.json();
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            approvedReviews = data.filter(r => r && r.status === 'approved');
+          }
         } else {
           approvedReviews = [];
         }
@@ -1446,7 +1497,39 @@
         console.warn('Error fetching approved reviews from Supabase:', err);
       }
 
-      pendingReviews = localPending.filter(r => r.status === 'pending');
+      // 2. Fetch pending reviews from Supabase
+      let supabasePending = [];
+      try {
+        const resP = await fetch(`${SUPABASE_URL}/rest/v1/reviews?status=eq.pending&select=*&order=created_at.desc`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        if (resP.ok) {
+          const dataP = await resP.json();
+          if (Array.isArray(dataP)) {
+            supabasePending = dataP.filter(r => r && r.status === 'pending');
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching pending reviews from Supabase:', err);
+      }
+
+      // 3. Load local pending (for offline queue / seed items)
+      let localPending = [];
+      try {
+        localPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+      } catch (_) { localPending = []; }
+
+      const approvedIds = new Set(approvedReviews.map(r => r.id));
+      const supabasePendingIds = new Set(supabasePending.map(r => r.id));
+
+      // Filter out any reviews that are already approved or marked rejected
+      pendingReviews = [
+        ...supabasePending,
+        ...localPending.filter(r => r.status === 'pending' && !approvedIds.has(r.id) && !supabasePendingIds.has(r.id))
+      ];
 
       document.getElementById('pendingReviewsSpinner').style.display = 'none';
       document.getElementById('approvedReviewsSpinner').style.display = 'none';
@@ -1514,6 +1597,7 @@
       pendingReviews.forEach(rev => {
         const card = document.createElement('div');
         card.className = 'admin-review-card';
+        card.setAttribute('data-id', rev.id);
         
         const starsStr = '★'.repeat(rev.rating || 5) + '☆'.repeat(5 - (rev.rating || 5));
         const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
@@ -1535,11 +1619,15 @@
           <div class="review-bottom-row">
             <span>Submitted: ${formattedDate}</span>
             <div class="card-actions">
-              <button class="btn-action-approve" onclick="approveReview('${rev.id}')">Approve</button>
-              <button class="btn-action-reject" onclick="rejectReview('${rev.id}')">Reject</button>
+              <button class="btn-action-approve" data-action="approve" data-id="${rev.id}">Approve</button>
+              <button class="btn-action-reject" data-action="reject" data-id="${rev.id}">Reject</button>
             </div>
           </div>
         `;
+
+        card.querySelector('.btn-action-approve').addEventListener('click', () => approveReview(rev.id));
+        card.querySelector('.btn-action-reject').addEventListener('click', () => rejectReview(rev.id));
+
         container.appendChild(card);
       });
     }
@@ -1561,6 +1649,7 @@
       approvedReviews.forEach(rev => {
         const card = document.createElement('div');
         card.className = 'admin-review-card';
+        card.setAttribute('data-id', rev.id);
 
         const starsStr = '★'.repeat(rev.rating || 5) + '☆'.repeat(5 - (rev.rating || 5));
         const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
@@ -1582,89 +1671,147 @@
           <div class="review-bottom-row">
             <span>Submitted: ${formattedDate}</span>
             <div class="card-actions">
-              <button class="btn-action-remove" onclick="moveReviewBackToPending('${rev.id}')">Remove to Pending</button>
+              <button class="btn-action-remove" data-action="remove" data-id="${rev.id}">Remove</button>
             </div>
           </div>
         `;
+
+        card.querySelector('.btn-action-remove').addEventListener('click', () => moveReviewBackToPending(rev.id));
+
         container.appendChild(card);
       });
     }
 
     /* ---- Review Action Handlers ---- */
     window.approveReview = async function(id) {
+      if (!id) return;
+      const card = document.querySelector(`#pendingReviewsList .admin-review-card[data-id="${id}"]`);
       const target = pendingReviews.find(r => r.id === id);
       if (!target) return;
 
-      // 1. Insert/Update into Supabase as approved
-      try {
-        await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: target.name,
-            event_type: target.event_type,
-            rating: target.rating,
-            message: target.message,
-            photo_url: target.photo_url,
-            status: 'approved'
-          })
-        });
-      } catch (err) {
-        console.warn('Supabase approve error:', err);
+      // 1. Immediately remove the card from the Pending tab DOM
+      if (card) {
+        card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+        setTimeout(() => card.remove(), 250);
       }
 
-      // 2. Remove from pending
-      let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
-      storedPending = storedPending.filter(r => r.id !== id);
-      localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+      // 2. Remove from in-memory pendingReviews
+      pendingReviews = pendingReviews.filter(r => r.id !== id);
 
+      // 3. Update status to 'approved' in Supabase strictly by ID
+      updateReviewStatusInSupabase(id, 'approved');
+      if (String(id).startsWith('seed-') || String(id).startsWith('rev_')) {
+        try {
+          fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: target.name,
+              event_type: target.event_type,
+              rating: target.rating,
+              message: target.message,
+              photo_url: target.photo_url,
+              status: 'approved'
+            })
+          }).catch(() => {});
+        } catch (_) {}
+      }
+
+      // 4. Update local cache
+      try {
+        let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+        storedPending = storedPending.filter(r => r.id !== id);
+        localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+      } catch (_) {}
+
+      // 5. Add to approvedReviews in-memory
+      target.status = 'approved';
+      approvedReviews = approvedReviews.filter(r => r.id !== id);
+      approvedReviews.unshift(target);
+
+      updateBadges();
+      renderPendingReviews();
+      renderApprovedReviews();
       showToast(`Approved review from ${target.name}!`);
-      fetchReviewsData();
     };
 
     window.rejectReview = async function(id) {
+      if (!id) return;
+      const card = document.querySelector(`#pendingReviewsList .admin-review-card[data-id="${id}"]`);
       const target = pendingReviews.find(r => r.id === id);
-      if (!target) return;
 
-      let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
-      storedPending = storedPending.filter(r => r.id !== id);
-      localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+      // 1. Immediately remove the card from the Pending tab DOM
+      if (card) {
+        card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+        setTimeout(() => card.remove(), 250);
+      }
 
-      showToast(`Rejected review from ${target.name}`, 'error');
-      fetchReviewsData();
+      // 2. Remove from in-memory arrays (do NOT show rejected reviews anywhere in tabs)
+      pendingReviews = pendingReviews.filter(r => r.id !== id);
+      approvedReviews = approvedReviews.filter(r => r.id !== id);
+
+      // 3. Update status in Supabase strictly by ID
+      updateReviewStatusInSupabase(id, 'rejected');
+
+      // 4. Remove from local pending queue
+      try {
+        let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+        storedPending = storedPending.filter(r => r.id !== id);
+        localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+      } catch (_) {}
+
+      updateBadges();
+      renderPendingReviews();
+      showToast('Review rejected and marked in database.', 'error');
     };
 
     window.moveReviewBackToPending = async function(id) {
+      if (!id) return;
+      const card = document.querySelector(`#approvedReviewsList .admin-review-card[data-id="${id}"]`);
       const target = approvedReviews.find(r => r.id === id);
       if (!target) return;
 
-      // 1. Update in Supabase to pending (or remove)
-      try {
-        await fetch(`${SUPABASE_URL}/rest/v1/reviews?id=eq.${id}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ status: 'pending' })
-        });
-      } catch (err) {
-        console.warn('Supabase patch status error:', err);
+      // 1. Immediately remove the card from the DOM in the Approved tab
+      if (card) {
+        card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+        setTimeout(() => card.remove(), 250);
       }
 
-      // 2. Add to local pending
-      let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
-      target.status = 'pending';
-      storedPending.push(target);
-      localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+      // 2. Remove from in-memory approvedReviews immediately
+      approvedReviews = approvedReviews.filter(r => r.id !== id);
 
-      showToast(`Moved review from ${target.name} back to pending.`);
-      fetchReviewsData();
+      // 3. Update status in Supabase to 'pending' strictly by ID
+      updateReviewStatusInSupabase(id, 'pending');
+
+      // 4. Update local storage cache
+      try {
+        let storedPending = JSON.parse(localStorage.getItem(LOCAL_PENDING_KEY) || '[]');
+        storedPending = storedPending.filter(r => r.id !== id);
+        target.status = 'pending';
+        storedPending.unshift(target);
+        localStorage.setItem(LOCAL_PENDING_KEY, JSON.stringify(storedPending));
+      } catch (_) {}
+
+      // 5. Add to in-memory pendingReviews immediately so it reappears in Pending tab
+      pendingReviews = pendingReviews.filter(r => r.id !== id);
+      target.status = 'pending';
+      pendingReviews.unshift(target);
+
+      // 6. Immediately re-render both lists and badges
+      updateBadges();
+      renderApprovedReviews();
+      renderPendingReviews();
+      showToast(`Review moved back to pending.`);
     };
 
     /* ---- TAB 2: GALLERY FETCH & RENDER ---- */

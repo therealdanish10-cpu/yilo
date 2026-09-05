@@ -1110,16 +1110,25 @@
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
           },
           body: JSON.stringify(insertPayload)
         });
 
         if (insertRes.ok || insertRes.status === 201) {
+          let assignedId = 'rev_' + Date.now();
+          try {
+            const data = await insertRes.json();
+            if (Array.isArray(data) && data[0] && data[0].id) {
+              assignedId = data[0].id;
+            }
+          } catch (_) {}
+
           try {
             const pendingList = JSON.parse(localStorage.getItem('yilo_admin_pending_reviews') || '[]');
             pendingList.unshift({
-              id: 'rev_' + Date.now(),
+              id: assignedId,
               name: fullName,
               event_type: eventType,
               rating: rating,

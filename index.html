@@ -1834,7 +1834,7 @@
 
     async function fetchReviews() {
       try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews?status=eq.approved&select=*`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews?status=eq.approved&select=*&order=created_at.desc`, {
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`
@@ -1842,9 +1842,13 @@
         });
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            initCarousel(data);
-            return;
+          if (Array.isArray(data)) {
+            // Strictly enforce that only approved reviews are rendered
+            const approvedOnly = data.filter(r => r && String(r.status).toLowerCase() === 'approved');
+            if (approvedOnly.length > 0) {
+              initCarousel(approvedOnly);
+              return;
+            }
           }
         }
       } catch (err) {
