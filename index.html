@@ -441,6 +441,7 @@
     }
     @media (max-width: 600px) {
       .review-card { flex: 0 0 100%; min-width: 0; max-width: 100%; }
+    }
 
     /* ====== EVENTS WE LOVE ====== */
     #events { background: var(--ivory); padding: 7rem 0; overflow: hidden; width: 100%; max-width: 100vw; }
@@ -2426,6 +2427,14 @@ ${message}`;
       });
     }
 
+    /* ---- Parallax on promise & gallery sections ---- */
+    const parallaxSections = document.querySelectorAll('#promise .parallax-bg, #gallery .parallax-bg');
+    window.addEventListener('scroll', () => {
+      parallaxSections.forEach(el => {
+        const rect = el.parentElement.getBoundingClientRect();
+        el.style.transform = 'translateY(' + (rect.top * 0.12) + 'px)';
+      });
+    }, { passive: true });
   </script>
 </body>
 </html>
