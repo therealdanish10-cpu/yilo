@@ -201,14 +201,23 @@
     #victoria { background: var(--plum); padding: 7rem 0; }
     .victoria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
     .photo-placeholder {
-      aspect-ratio: 4/5; background: rgba(201,162,75,.06);
-      border: 1.5px solid var(--gold); position: relative;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(201,162,75,.3); font-family: 'Montserrat', sans-serif;
-      font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+      aspect-ratio: 4/5;
+      background: #3B0F2F;
+      border: 1.5px solid var(--gold);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-family: 'Montserrat', sans-serif;
+      font-size: .72rem;
+      font-weight: 500;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      overflow: hidden;
     }
     .photo-placeholder::before, .photo-placeholder::after {
-      content: ''; position: absolute; border: 1px solid rgba(201,162,75,.25);
+      content: ''; position: absolute; border: 1px solid rgba(201,162,75,.25); pointer-events: none;
     }
     .photo-placeholder::before { inset: 10px; }
     .photo-placeholder::after { inset: 20px; }
@@ -1339,12 +1348,8 @@
   <section id="victoria" aria-labelledby="victoria-heading">
     <div class="container">
       <div class="victoria-grid">
-        <div class="photo-placeholder fade-up">
-          <img src="images/victoria.jpg" 
-               alt="Victoria Achieng" 
-               style="width:100%; height:100%; 
-               object-fit:cover; object-position:center top;
-               display:block;">
+        <div class="photo-placeholder fade-up" id="victoriaPhotoBox">
+          <span>PHOTO COMING SOON</span>
         </div>
         <div class="victoria-text fade-up delay-2">
           <img src="images/logos/logo2.svg" alt="Yilo by Achieng Logo" loading="eager" style="width: 220px; max-width: 100%; height: auto; object-fit: contain; margin-bottom: 1.25rem; display: block; filter: brightness(0) saturate(100%) invert(68%) sepia(55%) saturate(500%) hue-rotate(5deg) brightness(95%);" />
@@ -2473,6 +2478,44 @@ ${message}`;
         el.style.transform = 'translateY(' + (rect.top * 0.12) + 'px)';
       });
     }, { passive: true });
+
+    /* ---- Dynamic Fetch for Victoria's Photo ---- */
+    (function initVictoriaPhoto() {
+      const photoBox = document.getElementById('victoriaPhotoBox') || document.querySelector('.photo-placeholder');
+      if (!photoBox) return;
+
+      const photoUrl = 'https://nlrkdzbuysgdagycslhc.supabase.co/storage/v1/object/public/site-assets/victoria-photo';
+      const timestamp = Date.now();
+
+      const removedTimestamp = localStorage.getItem('yilo_victoria_photo_removed');
+      const photoTimestamp = localStorage.getItem('yilo_victoria_photo_timestamp');
+      const localData = localStorage.getItem('yilo_victoria_photo_data');
+
+      function showImage(src) {
+        photoBox.innerHTML = `<img src="${src}" alt="Victoria Achieng" style="width:100%; height:100%; object-fit:cover; object-position:center top; display:block;">`;
+      }
+
+      function showPlaceholder() {
+        photoBox.innerHTML = `<span>PHOTO COMING SOON</span>`;
+      }
+
+      const testImg = new Image();
+      testImg.onload = function() {
+        if (removedTimestamp && photoTimestamp && parseInt(removedTimestamp) > parseInt(photoTimestamp)) {
+          showPlaceholder();
+        } else {
+          showImage(photoUrl + '?t=' + timestamp);
+        }
+      };
+      testImg.onerror = function() {
+        if (localData && (!removedTimestamp || (photoTimestamp && parseInt(photoTimestamp) > parseInt(removedTimestamp)))) {
+          showImage(localData);
+        } else {
+          showPlaceholder();
+        }
+      };
+      testImg.src = photoUrl + '?t=' + timestamp;
+    })();
   </script>
 </body>
 </html>
