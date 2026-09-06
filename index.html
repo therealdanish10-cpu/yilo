@@ -2487,10 +2487,6 @@ ${message}`;
       const photoUrl = 'https://nlrkdzbuysgdagycslhc.supabase.co/storage/v1/object/public/site-assets/victoria-photo';
       const timestamp = Date.now();
 
-      const removedTimestamp = localStorage.getItem('yilo_victoria_photo_removed');
-      const photoTimestamp = localStorage.getItem('yilo_victoria_photo_timestamp');
-      const localData = localStorage.getItem('yilo_victoria_photo_data');
-
       function showImage(src) {
         photoBox.innerHTML = `<img src="${src}" alt="Victoria Achieng" style="width:100%; height:100%; object-fit:cover; object-position:center top; display:block;">`;
       }
@@ -2501,18 +2497,10 @@ ${message}`;
 
       const testImg = new Image();
       testImg.onload = function() {
-        if (removedTimestamp && photoTimestamp && parseInt(removedTimestamp) > parseInt(photoTimestamp)) {
-          showPlaceholder();
-        } else {
-          showImage(photoUrl + '?t=' + timestamp);
-        }
+        showImage(photoUrl + '?t=' + timestamp);
       };
       testImg.onerror = function() {
-        if (localData && (!removedTimestamp || (photoTimestamp && parseInt(photoTimestamp) > parseInt(removedTimestamp)))) {
-          showImage(localData);
-        } else {
-          showPlaceholder();
-        }
+        showPlaceholder();
       };
       testImg.src = photoUrl + '?t=' + timestamp;
     })();

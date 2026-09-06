@@ -1148,13 +1148,13 @@
                   <span>No photo yet</span>
                 </div>
                 <!-- Image element for preview -->
-                <img id="victoriaPhotoAdminImg" src="" alt="Victoria's Photo Preview" style="display: none; width: 100%; height: 100%; object-fit: cover; object-position: center top;" />
+                <img id="victoriaPreview" src="" alt="Victoria's Photo Preview" style="display: none; width: 100%; height: 100%; object-fit: cover; object-position: center top;" />
               </div>
             </div>
 
             <!-- Upload & Delete Buttons -->
             <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center;">
-              <input type="file" id="victoriaPhotoFileInput" accept="image/*" style="display: none;" />
+              <input type="file" id="victoriaPhotoInput" accept="image/*" style="display: none;" />
               
               <button type="button" id="btnUploadVictoriaPhoto" class="btn-admin-submit" style="margin-top: 0; background: var(--gold); color: var(--plum); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
                 Upload New Photo
@@ -2212,176 +2212,109 @@
     }
 
     /* ---- Victoria's Photo Admin Management ---- */
-    const victoriaPhotoAdminPlaceholder = document.getElementById('victoriaPhotoAdminPlaceholder');
-    const victoriaPhotoAdminImg = document.getElementById('victoriaPhotoAdminImg');
-    const victoriaPhotoFileInput = document.getElementById('victoriaPhotoFileInput');
-    const btnUploadVictoriaPhoto = document.getElementById('btnUploadVictoriaPhoto');
-    const btnRemoveVictoriaPhoto = document.getElementById('btnRemoveVictoriaPhoto');
-    const victoriaPhotoUploadStatus = document.getElementById('victoriaPhotoUploadStatus');
-
-    const VICTORIA_STORAGE_BUCKET = 'site-assets';
-    const VICTORIA_STORAGE_KEY = 'victoria-photo';
-    const VICTORIA_PUBLIC_URL = `${SUPABASE_URL}/storage/v1/object/public/${VICTORIA_STORAGE_BUCKET}/${VICTORIA_STORAGE_KEY}`;
-
-    function renderVictoriaAdminPhoto(src) {
-      if (victoriaPhotoAdminImg && victoriaPhotoAdminPlaceholder) {
-        victoriaPhotoAdminImg.src = src;
-        victoriaPhotoAdminImg.style.display = 'block';
-        victoriaPhotoAdminPlaceholder.style.display = 'none';
-      }
-      if (btnRemoveVictoriaPhoto) {
-        btnRemoveVictoriaPhoto.style.display = 'inline-block';
-      }
-    }
-
-    function renderVictoriaAdminPlaceholder() {
-      if (victoriaPhotoAdminImg && victoriaPhotoAdminPlaceholder) {
-        victoriaPhotoAdminImg.src = '';
-        victoriaPhotoAdminImg.style.display = 'none';
-        victoriaPhotoAdminPlaceholder.style.display = 'flex';
-      }
-      if (btnRemoveVictoriaPhoto) {
-        btnRemoveVictoriaPhoto.style.display = 'none';
-      }
-    }
+    const victoriaPhotoInput = document.querySelector('#victoriaPhotoInput');
+    const victoriaPreview = document.querySelector('#victoriaPreview');
+    const btnUploadVictoriaPhoto = document.querySelector('#btnUploadVictoriaPhoto');
+    const btnRemoveVictoriaPhoto = document.querySelector('#btnRemoveVictoriaPhoto');
+    const victoriaPhotoAdminPlaceholder = document.querySelector('#victoriaPhotoAdminPlaceholder');
 
     async function loadVictoriaPhotoAdmin() {
-      const removedTimestamp = localStorage.getItem('yilo_victoria_photo_removed');
-      const photoTimestamp = localStorage.getItem('yilo_victoria_photo_timestamp');
-      const localData = localStorage.getItem('yilo_victoria_photo_data');
+      const previewImg = document.querySelector('#victoriaPreview');
+      const placeholder = document.querySelector('#victoriaPhotoAdminPlaceholder');
+      const removeBtn = document.querySelector('#btnRemoveVictoriaPhoto');
 
-      const cacheBustUrl = `${VICTORIA_PUBLIC_URL}?t=${Date.now()}`;
+      const url = `https://nlrkdzbuysgdagycslhc.supabase.co/storage/v1/object/public/site-assets/victoria-photo?t=${Date.now()}`;
+      console.log('Loading Victoria photo preview from Supabase storage:', url);
+
       const testImg = new Image();
-
       testImg.onload = function() {
-        if (removedTimestamp && photoTimestamp && parseInt(removedTimestamp) > parseInt(photoTimestamp)) {
-          renderVictoriaAdminPlaceholder();
-        } else {
-          renderVictoriaAdminPhoto(cacheBustUrl);
+        console.log('Victoria photo found in Supabase storage');
+        if (previewImg) {
+          previewImg.src = url;
+          previewImg.style.display = 'block';
         }
+        if (placeholder) placeholder.style.display = 'none';
+        if (removeBtn) removeBtn.style.display = 'inline-block';
       };
-
       testImg.onerror = function() {
-        if (localData && (!removedTimestamp || (photoTimestamp && parseInt(photoTimestamp) > parseInt(removedTimestamp)))) {
-          renderVictoriaAdminPhoto(localData);
-        } else {
-          renderVictoriaAdminPlaceholder();
+        console.log('No Victoria photo found in Supabase storage');
+        if (previewImg) {
+          previewImg.src = '';
+          previewImg.style.display = 'none';
         }
+        if (placeholder) placeholder.style.display = 'flex';
+        if (removeBtn) removeBtn.style.display = 'none';
       };
-
-      testImg.src = cacheBustUrl;
+      testImg.src = url;
     }
 
-    if (btnUploadVictoriaPhoto && victoriaPhotoFileInput) {
+    if (btnUploadVictoriaPhoto && victoriaPhotoInput) {
       btnUploadVictoriaPhoto.addEventListener('click', () => {
-        victoriaPhotoFileInput.click();
+        console.log('Upload New Photo button clicked');
+        victoriaPhotoInput.click();
       });
 
-      victoriaPhotoFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+      victoriaPhotoInput.addEventListener('change', async () => {
+        console.log('File input change event triggered');
+        const file = document.querySelector('#victoriaPhotoInput').files[0];
+        if (!file) {
+          console.warn('No file selected');
+          return;
+        }
 
-        // Instant visual preview
-        try {
-          const previewUrl = URL.createObjectURL(file);
-          renderVictoriaAdminPhoto(previewUrl);
-        } catch (_) {}
+        console.log('Selected file for upload:', {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified
+        });
 
         btnUploadVictoriaPhoto.disabled = true;
         btnUploadVictoriaPhoto.textContent = 'Uploading...';
-        if (victoriaPhotoUploadStatus) {
-          victoriaPhotoUploadStatus.style.display = 'block';
-          victoriaPhotoUploadStatus.textContent = 'Uploading photo to Supabase storage...';
-        }
 
-        // Cache locally first for instant availability across pages
-        await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = function(evt) {
-            localStorage.setItem('yilo_victoria_photo_data', evt.target.result);
-            localStorage.setItem('yilo_victoria_photo_timestamp', Date.now().toString());
-            localStorage.removeItem('yilo_victoria_photo_removed');
-            resolve();
-          };
-          reader.readAsDataURL(file);
-        });
+        console.log('Starting Supabase upload to bucket "site-assets", key "victoria-photo"...');
+        console.log('Supabase client initialized:', !!supabase);
 
-        let uploadSuccess = false;
-
-        // 1. Supabase client upload with upsert: true
-        if (supabase) {
-          try {
-            const { data, error } = await supabase.storage
-              .from(VICTORIA_STORAGE_BUCKET)
-              .upload(VICTORIA_STORAGE_KEY, file, {
-                upsert: true,
-                contentType: file.type || 'image/jpeg'
-              });
-            if (!error) {
-              uploadSuccess = true;
-            } else {
-              console.warn('Supabase JS upload warning:', error);
-            }
-          } catch (err) {
-            console.warn('Supabase JS upload exception:', err);
-          }
-        }
-
-        // 2. Direct REST upload fallback
-        if (!uploadSuccess) {
-          try {
-            try {
-              await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
-                method: 'POST',
-                headers: {
-                  'apikey': SUPABASE_KEY,
-                  'Authorization': `Bearer ${SUPABASE_KEY}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id: VICTORIA_STORAGE_BUCKET, name: VICTORIA_STORAGE_BUCKET, public: true })
-              });
-            } catch (_) {}
-
-            let res = await fetch(`${SUPABASE_URL}/storage/v1/object/${VICTORIA_STORAGE_BUCKET}/${VICTORIA_STORAGE_KEY}`, {
-              method: 'PUT',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': file.type || 'image/jpeg',
-                'x-upsert': 'true'
-              },
-              body: file
+        try {
+          const { data, error } = await supabase
+            .storage
+            .from('site-assets')
+            .upload('victoria-photo', file, {
+              cacheControl: '3600',
+              upsert: true,
+              contentType: file.type
             });
-            if (!res.ok) {
-              res = await fetch(`${SUPABASE_URL}/storage/v1/object/${VICTORIA_STORAGE_BUCKET}/${VICTORIA_STORAGE_KEY}`, {
-                method: 'POST',
-                headers: {
-                  'apikey': SUPABASE_KEY,
-                  'Authorization': `Bearer ${SUPABASE_KEY}`,
-                  'Content-Type': file.type || 'image/jpeg',
-                  'x-upsert': 'true'
-                },
-                body: file
-              });
+
+          if (error) {
+            console.error('Upload error:', error);
+            showToast('Upload failed: ' + (error.message || 'Error uploading photo'), 'error');
+          } else {
+            console.log('Upload successful! Data:', data);
+            showToast('Photo updated!', 'success');
+            const url = `https://nlrkdzbuysgdagycslhc.supabase.co/storage/v1/object/public/site-assets/victoria-photo?t=${Date.now()}`;
+            console.log('Setting #victoriaPreview src to:', url);
+            const previewImg = document.querySelector('#victoriaPreview');
+            if (previewImg) {
+              previewImg.src = url;
+              previewImg.style.display = 'block';
             }
-            if (res.ok) {
-              uploadSuccess = true;
+            const placeholder = document.querySelector('#victoriaPhotoAdminPlaceholder');
+            if (placeholder) {
+              placeholder.style.display = 'none';
             }
-          } catch (err) {
-            console.warn('Direct REST storage upload error:', err);
+            const removeBtn = document.querySelector('#btnRemoveVictoriaPhoto');
+            if (removeBtn) {
+              removeBtn.style.display = 'inline-block';
+            }
           }
+        } catch (err) {
+          console.error('Unexpected exception during Supabase upload:', err);
+          showToast('Upload error: ' + (err.message || 'Unexpected error'), 'error');
+        } finally {
+          btnUploadVictoriaPhoto.disabled = false;
+          btnUploadVictoriaPhoto.textContent = 'Upload New Photo';
+          victoriaPhotoInput.value = '';
         }
-
-        loadVictoriaPhotoAdmin();
-
-        btnUploadVictoriaPhoto.disabled = false;
-        btnUploadVictoriaPhoto.textContent = 'Upload New Photo';
-        if (victoriaPhotoUploadStatus) {
-          victoriaPhotoUploadStatus.style.display = 'none';
-        }
-        victoriaPhotoFileInput.value = '';
-
-        showToast('Photo updated!', 'success');
       });
     }
 
@@ -2391,38 +2324,38 @@
 
         btnRemoveVictoriaPhoto.disabled = true;
         btnRemoveVictoriaPhoto.textContent = 'Removing...';
+        console.log('Removing "victoria-photo" from "site-assets" bucket...');
 
-        // 1. Remove from Supabase storage
-        if (supabase) {
-          try {
-            await supabase.storage.from(VICTORIA_STORAGE_BUCKET).remove([VICTORIA_STORAGE_KEY]);
-          } catch (err) {
-            console.warn('Supabase JS remove error:', err);
-          }
-        }
-
-        // 2. Direct REST remove fallback
         try {
-          await fetch(`${SUPABASE_URL}/storage/v1/object/${VICTORIA_STORAGE_BUCKET}`, {
-            method: 'DELETE',
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prefixes: [VICTORIA_STORAGE_KEY] })
-          });
-        } catch (_) {}
+          const { data, error } = await supabase
+            .storage
+            .from('site-assets')
+            .remove(['victoria-photo']);
 
-        // Clear local storage cache & flag as removed
-        localStorage.removeItem('yilo_victoria_photo_data');
-        localStorage.setItem('yilo_victoria_photo_removed', Date.now().toString());
-
-        btnRemoveVictoriaPhoto.disabled = false;
-        btnRemoveVictoriaPhoto.textContent = 'Remove Photo';
-
-        renderVictoriaAdminPlaceholder();
-        showToast('Photo removed', 'success');
+          if (error) {
+            console.error('Remove error:', error);
+            showToast('Failed to remove photo: ' + (error.message || 'Error'), 'error');
+          } else {
+            console.log('Photo removed successfully:', data);
+            showToast('Photo removed', 'success');
+            const previewImg = document.querySelector('#victoriaPreview');
+            if (previewImg) {
+              previewImg.src = '';
+              previewImg.style.display = 'none';
+            }
+            const placeholder = document.querySelector('#victoriaPhotoAdminPlaceholder');
+            if (placeholder) {
+              placeholder.style.display = 'flex';
+            }
+            btnRemoveVictoriaPhoto.style.display = 'none';
+          }
+        } catch (err) {
+          console.error('Unexpected error during remove:', err);
+          showToast('Unexpected error removing photo: ' + (err.message || 'Error'), 'error');
+        } finally {
+          btnRemoveVictoriaPhoto.disabled = false;
+          btnRemoveVictoriaPhoto.textContent = 'Remove Photo';
+        }
       });
     }
 
